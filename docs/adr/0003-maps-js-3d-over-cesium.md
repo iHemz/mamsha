@@ -1,6 +1,6 @@
 # 0003: Maps JavaScript 3D maps instead of CesiumJS
 
-- **Status:** Accepted
+- **Status:** Superseded by [0005](0005-cesium-ion-and-mapillary.md) on 2026-11-17
 - **Date:** 2026-11-17
 
 ## Context

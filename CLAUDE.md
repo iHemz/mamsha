@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This repo is a demo for Niyvaru: a real-time voice agent that walks a traveller from a Makkah hotel to the Haram through real 3D imagery and Street View. The web app is TypeScript (Vite + React). The API is Python (FastAPI). The full plan is in `docs/BUILD_PLAN.md`.
+This repo is a demo for Niyvaru: a real-time voice agent that walks a traveller from a Makkah hotel to the Haram through real 3D imagery (Google Photorealistic 3D Tiles via Cesium ion, rendered with CesiumJS) and real street-level photos (Mapillary, or Google Street View when a key exists). The web app is TypeScript (Vite + React). The API is Python (FastAPI). The full plan is in `docs/BUILD_PLAN.md`.
 
 ## How to work each session
 
@@ -12,7 +12,7 @@ This repo is a demo for Niyvaru: a real-time voice agent that walks a traveller 
 6. Commit with conventional commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`), one concern per commit.
 7. At the end, add a dated entry to `docs/PROGRESS.md`: what was done, what's left, any blockers.
 
-If something in the plan is wrong or blocked (an API has changed, a model name is outdated, coverage is missing), stop and explain the options. Don't quietly change scope. Check current docs for Gemini Live, `google-genai` ephemeral tokens and Maps 3D before writing code against them, since these change often.
+If something in the plan is wrong or blocked (an API has changed, a model name is outdated, coverage is missing), stop and explain the options. Don't quietly change scope. Check current docs for Gemini Live, `google-genai` ephemeral tokens, CesiumJS, Cesium ion and the Mapillary API before writing code against them, since these change often.
 
 ## Standards
 
@@ -25,7 +25,7 @@ If something in the plan is wrong or blocked (an API has changed, a model name i
 - Strict mode. No `any` without a comment saying why.
 - Never hand-edit `packages/shared` or `schemas/`. Run `make gen` after changing a Pydantic model.
 - Model tool calls are validated with Ajv against the shared JSON Schema before anything touches the map.
-- The map is only touched through `MapController`. Voice only through `VoiceSession`. Logic is tested with the fake implementations.
+- The map is only touched through `MapController`, street-level imagery only through `StreetLevelProvider`, voice only through `VoiceSession`. Logic is tested with the fake implementations.
 
 **Both**
 - New logic comes with tests. Schemas, prompt builder, tool declarations, camera math, the walk state machine, the dispatcher and PCM conversion must stay covered.
@@ -35,7 +35,10 @@ If something in the plan is wrong or blocked (an API has changed, a model name i
 
 - Never commit secrets. Keys live in `.env` (gitignored). Keep `.env.example` current.
 - Gemini and Groq keys are server-side only. The browser only receives short-lived Live tokens from `POST /live/token`.
-- Never download, store or cache Google Street View or 3D tile imagery. Keep Google's attribution visible.
+- Never download, store or cache 3D tiles, Mapillary or Street View imagery. Keep the Google logo, Cesium credits and Mapillary attribution visible.
+- Never fake street-level imagery. If no provider has imagery for a stop, use the Cesium street-height camera.
+- The Google Maps key is optional. The app must run fully without it.
+- The Cesium ion token is browser-side and restricted to the Google Photorealistic 3D Tiles asset. Never enable Cesium viewer defaults that call other ion assets or services (globe imagery, terrain, geocoder, base layer picker).
 - The agent may only state place facts that exist in `data/route.json`. Never add facts without a `verified_from` value Williams has confirmed.
 
 ## Commands
