@@ -1,0 +1,149 @@
+{
+  "$defs": {
+    "ArrivedAtStop": {
+      "additionalProperties": false,
+      "description": "Sent by the web app when the walk reaches a stop, so the agent narrates it.",
+      "properties": {
+        "stop_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z0-9]+(?:[-_][a-z0-9]+)*$",
+          "title": "Stop Id",
+          "type": "string"
+        },
+        "type": {
+          "const": "arrived_at_stop",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "stop_id"
+      ],
+      "title": "ArrivedAtStop",
+      "type": "object"
+    },
+    "ChatMessage": {
+      "additionalProperties": false,
+      "properties": {
+        "role": {
+          "enum": [
+            "traveller",
+            "agent"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "text"
+      ],
+      "title": "ChatMessage",
+      "type": "object"
+    },
+    "TravellerMessage": {
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "type": {
+          "const": "message",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "text"
+      ],
+      "title": "TravellerMessage",
+      "type": "object"
+    },
+    "TravellerProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "enum": [
+            "wheelchair_family",
+            "young_couple"
+          ],
+          "title": "Id",
+          "type": "string"
+        },
+        "needs": {
+          "items": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 10,
+          "title": "Needs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "TravellerProfile",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "history": {
+      "items": {
+        "$ref": "#/$defs/ChatMessage"
+      },
+      "maxItems": 50,
+      "title": "History",
+      "type": "array"
+    },
+    "input": {
+      "discriminator": {
+        "mapping": {
+          "arrived_at_stop": "#/$defs/ArrivedAtStop",
+          "message": "#/$defs/TravellerMessage"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/TravellerMessage"
+        },
+        {
+          "$ref": "#/$defs/ArrivedAtStop"
+        }
+      ],
+      "title": "Input"
+    },
+    "profile": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TravellerProfile"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "input"
+  ],
+  "title": "AgentTurnRequest",
+  "type": "object"
+}

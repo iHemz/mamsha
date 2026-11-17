@@ -1,0 +1,185 @@
+{
+  "$defs": {
+    "Fact": {
+      "additionalProperties": false,
+      "description": "A single place fact. It must say where it was verified, so nothing is invented.",
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z0-9]+(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "profiles": {
+          "description": "Traveller profiles this fact is relevant to.",
+          "items": {
+            "enum": [
+              "wheelchair_family",
+              "young_couple"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Profiles",
+          "type": "array"
+        },
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "verified_from": {
+          "description": "Where Williams confirmed this fact (e.g. 'Street View, Nov 2026').",
+          "minLength": 3,
+          "title": "Verified From",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "profiles",
+        "verified_from"
+      ],
+      "title": "Fact",
+      "type": "object"
+    },
+    "LatLng": {
+      "additionalProperties": false,
+      "properties": {
+        "lat": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Lat",
+          "type": "number"
+        },
+        "lng": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Lng",
+          "type": "number"
+        }
+      },
+      "required": [
+        "lat",
+        "lng"
+      ],
+      "title": "LatLng",
+      "type": "object"
+    },
+    "Place": {
+      "additionalProperties": false,
+      "properties": {
+        "facts": {
+          "items": {
+            "$ref": "#/$defs/Fact"
+          },
+          "title": "Facts",
+          "type": "array"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z0-9]+(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "position": {
+          "$ref": "#/$defs/LatLng"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "position"
+      ],
+      "title": "Place",
+      "type": "object"
+    },
+    "Stop": {
+      "additionalProperties": false,
+      "properties": {
+        "facts": {
+          "items": {
+            "$ref": "#/$defs/Fact"
+          },
+          "minItems": 1,
+          "title": "Facts",
+          "type": "array"
+        },
+        "heading": {
+          "description": "Walking direction at this stop, degrees.",
+          "exclusiveMaximum": 360,
+          "minimum": 0,
+          "title": "Heading",
+          "type": "number"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z0-9]+(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "position": {
+          "$ref": "#/$defs/LatLng"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "position",
+        "heading",
+        "facts"
+      ],
+      "title": "Stop",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "gate": {
+      "$ref": "#/$defs/Place"
+    },
+    "hotel": {
+      "$ref": "#/$defs/Place"
+    },
+    "path": {
+      "description": "Walking line from hotel to gate.",
+      "items": {
+        "$ref": "#/$defs/LatLng"
+      },
+      "minItems": 2,
+      "title": "Path",
+      "type": "array"
+    },
+    "stops": {
+      "items": {
+        "$ref": "#/$defs/Stop"
+      },
+      "minItems": 1,
+      "title": "Stops",
+      "type": "array"
+    }
+  },
+  "required": [
+    "hotel",
+    "gate",
+    "path",
+    "stops"
+  ],
+  "title": "RouteData",
+  "type": "object"
+}

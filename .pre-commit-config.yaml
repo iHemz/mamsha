@@ -1,0 +1,26 @@
+# API hooks. Run from the Husky pre-commit hook (Husky owns .git/hooks), or by hand:
+#   uv run --project services/api pre-commit run --all-files
+# Ruff finds services/api/pyproject.toml from each file's path, so no --config is passed
+# (an explicit --config would resolve paths against the repo root instead).
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run --project services/api ruff check --fix
+        language: system
+        types: [python]
+        files: ^services/api/
+      - id: ruff-format
+        name: ruff format
+        entry: uv run --project services/api ruff format
+        language: system
+        types: [python]
+        files: ^services/api/
+      - id: mypy
+        name: mypy (strict)
+        entry: uv --directory services/api run mypy
+        language: system
+        types: [python]
+        files: ^services/api/
+        pass_filenames: false

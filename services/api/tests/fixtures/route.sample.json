@@ -1,0 +1,56 @@
+{
+  "hotel": {
+    "id": "test-hotel",
+    "name": "Test Hotel (fixture, not a real place)",
+    "position": { "lat": 21.4190, "lng": 39.8230 },
+    "facts": [
+      {
+        "id": "test-hotel-entrance",
+        "text": "Fixture fact: step-free entrance.",
+        "profiles": ["wheelchair_family"],
+        "verified_from": "test fixture"
+      }
+    ]
+  },
+  "gate": {
+    "id": "test-gate",
+    "name": "Test Gate (fixture)",
+    "position": { "lat": 21.4215, "lng": 39.8260 },
+    "facts": []
+  },
+  "path": [
+    { "lat": 21.4190, "lng": 39.8230 },
+    { "lat": 21.4200, "lng": 39.8242 },
+    { "lat": 21.4215, "lng": 39.8260 }
+  ],
+  "stops": [
+    {
+      "id": "stop-1",
+      "title": "Fixture stop one",
+      "position": { "lat": 21.4195, "lng": 39.8236 },
+      "heading": 45,
+      "facts": [
+        {
+          "id": "stop-1-slope",
+          "text": "Fixture fact: gentle slope.",
+          "profiles": ["wheelchair_family", "young_couple"],
+          "verified_from": "test fixture"
+        }
+      ]
+    },
+    {
+      "id": "stop-2",
+      "title": "Fixture stop two",
+      "position": { "lat": 21.4205, "lng": 39.8248 },
+      "heading": 50.5,
+      "facts": [
+        {
+          "id": "stop-2-crossing",
+          "text": "Fixture fact: signalled crossing.",
+          "profiles": ["young_couple"],
+          "verified_from": "test fixture"
+        }
+      ]
+    }
+  ]
+}

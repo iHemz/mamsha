@@ -1,0 +1,311 @@
+{
+  "$defs": {
+    "EnterStreetView": {
+      "additionalProperties": false,
+      "description": "Open Street View at a stop, facing the walking direction.",
+      "properties": {
+        "args": {
+          "$ref": "#/$defs/StopArgs"
+        },
+        "name": {
+          "const": "enter_street_view",
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "args"
+      ],
+      "title": "EnterStreetView",
+      "type": "object"
+    },
+    "ExitStreetView": {
+      "additionalProperties": false,
+      "description": "Return from Street View to the 3D map.",
+      "properties": {
+        "args": {
+          "$ref": "#/$defs/NoArgs"
+        },
+        "name": {
+          "const": "exit_street_view",
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "ExitStreetView",
+      "type": "object"
+    },
+    "FlyToStop": {
+      "additionalProperties": false,
+      "description": "Move the camera to a stop.",
+      "properties": {
+        "args": {
+          "$ref": "#/$defs/StopArgs"
+        },
+        "name": {
+          "const": "fly_to_stop",
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "args"
+      ],
+      "title": "FlyToStop",
+      "type": "object"
+    },
+    "NoArgs": {
+      "additionalProperties": false,
+      "properties": {},
+      "title": "NoArgs",
+      "type": "object"
+    },
+    "PauseWalk": {
+      "additionalProperties": false,
+      "description": "Pause the fly-along.",
+      "properties": {
+        "args": {
+          "$ref": "#/$defs/NoArgs"
+        },
+        "name": {
+          "const": "pause_walk",
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "PauseWalk",
+      "type": "object"
+    },
+    "ResumeWalk": {
+      "additionalProperties": false,
+      "description": "Resume the fly-along.",
+      "properties": {
+        "args": {
+          "$ref": "#/$defs/NoArgs"
+        },
+        "name": {
+          "const": "resume_walk",
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "ResumeWalk",
+      "type": "object"
+    },
+    "SelectHotel": {
+      "additionalProperties": false,
+      "description": "Highlight the hotel and frame it in 3D.",
+      "properties": {
+        "args": {
+          "$ref": "#/$defs/SelectHotelArgs"
+        },
+        "name": {
+          "const": "select_hotel",
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "args"
+      ],
+      "title": "SelectHotel",
+      "type": "object"
+    },
+    "SelectHotelArgs": {
+      "additionalProperties": false,
+      "properties": {
+        "hotel_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z0-9]+(?:[-_][a-z0-9]+)*$",
+          "title": "Hotel Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "hotel_id"
+      ],
+      "title": "SelectHotelArgs",
+      "type": "object"
+    },
+    "SetTravellerProfile": {
+      "additionalProperties": false,
+      "description": "Record who is travelling and what they need.",
+      "properties": {
+        "args": {
+          "$ref": "#/$defs/SetTravellerProfileArgs"
+        },
+        "name": {
+          "const": "set_traveller_profile",
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "args"
+      ],
+      "title": "SetTravellerProfile",
+      "type": "object"
+    },
+    "SetTravellerProfileArgs": {
+      "additionalProperties": false,
+      "properties": {
+        "needs": {
+          "items": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 10,
+          "title": "Needs",
+          "type": "array"
+        },
+        "profile": {
+          "enum": [
+            "wheelchair_family",
+            "young_couple"
+          ],
+          "title": "Profile",
+          "type": "string"
+        }
+      },
+      "required": [
+        "profile"
+      ],
+      "title": "SetTravellerProfileArgs",
+      "type": "object"
+    },
+    "ShowRoute": {
+      "additionalProperties": false,
+      "description": "Draw the walking route as a 3D line.",
+      "properties": {
+        "args": {
+          "$ref": "#/$defs/NoArgs"
+        },
+        "name": {
+          "const": "show_route",
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "ShowRoute",
+      "type": "object"
+    },
+    "StartWalk": {
+      "additionalProperties": false,
+      "description": "Begin the camera fly-along from the hotel.",
+      "properties": {
+        "args": {
+          "$ref": "#/$defs/NoArgs"
+        },
+        "name": {
+          "const": "start_walk",
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "StartWalk",
+      "type": "object"
+    },
+    "StopArgs": {
+      "additionalProperties": false,
+      "properties": {
+        "stop_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z0-9]+(?:[-_][a-z0-9]+)*$",
+          "title": "Stop Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "stop_id"
+      ],
+      "title": "StopArgs",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "actions": {
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "enter_street_view": "#/$defs/EnterStreetView",
+            "exit_street_view": "#/$defs/ExitStreetView",
+            "fly_to_stop": "#/$defs/FlyToStop",
+            "pause_walk": "#/$defs/PauseWalk",
+            "resume_walk": "#/$defs/ResumeWalk",
+            "select_hotel": "#/$defs/SelectHotel",
+            "set_traveller_profile": "#/$defs/SetTravellerProfile",
+            "show_route": "#/$defs/ShowRoute",
+            "start_walk": "#/$defs/StartWalk"
+          },
+          "propertyName": "name"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/SetTravellerProfile"
+          },
+          {
+            "$ref": "#/$defs/SelectHotel"
+          },
+          {
+            "$ref": "#/$defs/ShowRoute"
+          },
+          {
+            "$ref": "#/$defs/StartWalk"
+          },
+          {
+            "$ref": "#/$defs/FlyToStop"
+          },
+          {
+            "$ref": "#/$defs/EnterStreetView"
+          },
+          {
+            "$ref": "#/$defs/ExitStreetView"
+          },
+          {
+            "$ref": "#/$defs/PauseWalk"
+          },
+          {
+            "$ref": "#/$defs/ResumeWalk"
+          }
+        ]
+      },
+      "title": "Actions",
+      "type": "array"
+    },
+    "text": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Text",
+      "type": "string"
+    }
+  },
+  "required": [
+    "text"
+  ],
+  "title": "AgentTurnResponse",
+  "type": "object"
+}

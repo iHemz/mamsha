@@ -1,0 +1,2 @@
+pnpm exec lint-staged
+uv run --project services/api pre-commit run
