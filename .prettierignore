@@ -1,0 +1,16 @@
+# Generated
+packages/shared/src/
+schemas/
+
+# Lockfiles and build output
+pnpm-lock.yaml
+dist/
+coverage/
+
+# Python service (ruff formats it)
+services/api/
+
+# Hand-written prose and agent config: not reformatted
+docs/
+.claude/
+CLAUDE.md
