@@ -14,9 +14,9 @@ Items marked **(Williams)** need a human. Claude Code must not tick them, and sh
 A single page, split in two:
 
 - **Left: the agent.** A real-time voice conversation with live captions. The traveller speaks ("My father uses a wheelchair, we want a hotel near the Haram") and the agent answers out loud, and can be interrupted mid-sentence. A text box is always there.
-- **Right: the real city.** Google's photorealistic 3D map of central Makkah.
+- **Right: the real city.** Google's photorealistic 3D imagery of central Makkah, streamed through Cesium ion and rendered with CesiumJS.
 
-The agent's speech drives the map through tool calls. It selects the hotel, draws the walking route, and flies the camera along it. At 4 or 5 stops it drops into Street View facing the direction of walking and explains what matters there for *this* traveller (slope, steps, crossings, entrance, a nearby pharmacy). Change the traveller profile and the narration changes.
+The agent's speech drives the map through tool calls. It selects the hotel, draws the walking route, and flies the camera along it. At 4 or 5 stops it drops to street level facing the direction of walking (real 360° photos from Mapillary, or Google Street View if a Maps key is available) and explains what matters there for *this* traveller (slope, steps, crossings, entrance, a nearby pharmacy). Change the traveller profile and the narration changes.
 
 **Success criteria (what Abdiladiif should feel):**
 1. The streets look real (real 3D imagery and real street-level photos, not generated models).
@@ -43,8 +43,11 @@ Browser (apps/web, TypeScript)                         API (services/api, Python
 │        │                                 │            │                     prompt, tools) │
 │        ▼                                 │            │ POST /stt          (Groq Whisper)  │
 │ MapController interface                  │            │ POST /agent/turn   (Gemini text +  │
-│  - GoogleMapController (3D + Street View)│            │                     tools, Groq LLM│
+│  - CesiumMapController (Cesium ion 3D)   │            │                     tools, Groq LLM│
 │  - FakeMapController (tests)             │            │                     as backup)     │
+│ StreetLevelProvider chain                │            │                                    │
+│  Google SV (if key) → Mapillary →        │            │                                    │
+│  Cesium street-height camera             │            │                                    │
 └─────────────────────────────────────────┘            │ Pydantic models = source of truth  │
                                                        └───────────────────────────────────┘
          schemas/*.json  ◀── exported from Pydantic ──▶  packages/shared (generated TS types)
@@ -52,7 +55,7 @@ Browser (apps/web, TypeScript)                         API (services/api, Python
 
 ### Why Python for the API and TypeScript for the web
 
-- The browser side must be TypeScript: 3D maps, Street View, the microphone and audio playback are browser APIs.
+- The browser side must be TypeScript: 3D maps, street-level imagery, the microphone and audio playback are browser APIs.
 - The API is Python because the future intelligence engine (learning from conversations, proposing experiments, measuring conversion) is data and ML work. Starting in Python means the demo's backend can grow into the real product's backend instead of being thrown away.
 - The cost of two languages (schema drift) is removed by making Pydantic the single source of truth: models export JSON Schema, TypeScript types are generated from it, the browser validates tool calls against the same JSON Schema with Ajv, and CI fails if anything is out of date.
 
@@ -65,6 +68,17 @@ Each layer implements one `VoiceSession` interface in the web app (`start`, `sto
 3. **Text.** Typed input through `/agent/turn`. No audio.
 4. **Scripted.** `?mode=scripted` plays prepared replies and actions with no network calls to any AI. Used for e2e tests and as the "never fails" demo mode.
 
+### Map and street level: the fallback chain
+
+The demo must work with no paid Google Maps account. See ADR 0005.
+
+- **3D city:** CesiumJS rendering Google Photorealistic 3D Tiles streamed through Cesium ion (free Community plan, no Google Cloud billing). `CesiumMapController` implements `MapController`.
+- **Street level** goes through a `StreetLevelProvider` interface, tried in this order at each stop:
+  1. **Google Street View**, only when `VITE_GOOGLE_MAPS_API_KEY` is set (for example if Niyvaru supplies a billed key).
+  2. **Mapillary**: the nearest image to the stop through the Mapillary Graph API, preferring 360° panoramas, shown in a MapillaryJS viewer facing the walking direction.
+  3. **Cesium street-height camera**: no photo exists, so the 3D camera drops to eye height (about 1.7 m above the ground, sampled from the 3D tiles) and faces the walking direction. Never fake imagery.
+- `VITE_STREET_LEVEL_PROVIDER` can force one provider (`auto`, `google`, `mapillary`, `cesium`). `auto` follows the order above.
+
 ### Agent tools (map actions)
 
 | Tool | Effect |
@@ -74,8 +88,8 @@ Each layer implements one `VoiceSession` interface in the web app (`start`, `sto
 | `show_route()` | Draws the walking route as a 3D line |
 | `start_walk()` | Begins the camera fly-along |
 | `fly_to_stop(stop_id)` | Moves the camera to a stop |
-| `enter_street_view(stop_id)` | Street View at the stop, facing the walking direction |
-| `exit_street_view()` | Back to 3D |
+| `enter_street_view(stop_id)` | Street-level view at the stop, facing the walking direction, from the first provider that has imagery (name kept for schema stability, see ADR 0005) |
+| `exit_street_view()` | Back to the 3D view |
 | `pause_walk()` / `resume_walk()` | Walk control |
 
 Tool declarations are generated from the Pydantic action models, so the model, the API and the browser all use the same definitions. During the walk the web app sends the agent an `arrived_at_stop` event so it narrates that stop for the current profile.
@@ -95,9 +109,10 @@ The agent may only state facts about a place that exist in `data/route.json`. If
 | Python tooling | uv, ruff (lint + format), mypy (strict), pytest + pytest-asyncio, httpx test client | Professional baseline |
 | Primary voice | Gemini Live API via `google-genai` (Python, for tokens) and the browser Live WebSocket | Real-time speech-to-speech with tool calling, free tier to start |
 | Fallback STT | Groq Whisper (`whisper-large-v3-turbo`) | Free tier, no card |
+| Fallback TTS | Groq Orpheus (`canopylabs/orpheus-v1-english`), browser `speechSynthesis` last | A real voice in the pipeline fallback (check it's on the free tier) |
 | Fallback LLM | Gemini text model with tools, Groq-hosted LLM as backup | Same tools, different provider |
-| 3D | Maps JavaScript API 3D maps (`maps3d`: `Map3DElement`, `Polyline3DElement`, `Marker3DElement`, `flyCameraTo`) | Real imagery, less setup than CesiumJS. Check current docs, it may need the beta channel |
-| Street level | `StreetViewPanorama` + `StreetViewService.getPanorama` | Real photos, loaded live |
+| 3D | CesiumJS + Google Photorealistic 3D Tiles via Cesium ion (`createGooglePhotorealistic3DTileset`) | Real Google imagery with no Google Cloud billing, finer camera control. Free Community plan (personal, non-commercial) |
+| Street level | Mapillary (Graph API + MapillaryJS), Google Street View when a key exists, Cesium street-height camera as the last resort | Free real photos, with fallbacks for coverage gaps |
 | Route | Hand-drawn coordinates in `data/route.json`, served by `GET /route` | Full control near the Haram, no Routes API cost |
 | Shared schema | Pydantic → JSON Schema → `json-schema-to-typescript` types + Ajv runtime validation | One source of truth across languages |
 | JS tooling | pnpm, ESLint, Prettier, Vitest, Playwright | Standard |
@@ -110,14 +125,15 @@ The agent may only state facts about a place that exist in `data/route.json`. If
 ## 4. Repository layout
 
 ```
-niyvaru-route-demo/
+mamsha/
 ├── apps/
 │   └── web/                     # Vite + React + TS
 │       └── src/
 │           ├── voice/           # VoiceSession interface + GeminiLive, Pipeline, Text, Scripted sessions,
 │           │                    # AudioWorklet capture, PCM playback
 │           ├── agent/           # api client, action dispatcher (Ajv), conversation state
-│           ├── map/             # MapController interface, Google + Fake implementations, camera math
+│           ├── map/             # MapController (Cesium + Fake), StreetLevelProvider (Google, Mapillary,
+│           │                    # Cesium street-height), camera math
 │           ├── walk/            # walk state machine
 │           └── components/      # ChatPanel, Captions, ModeBadge, ProfileToggle, WalkProgress
 ├── services/
@@ -147,10 +163,10 @@ niyvaru-route-demo/
 
 **Environment (validated at startup, never committed):**
 
-- Web: `VITE_GOOGLE_MAPS_API_KEY`, `VITE_API_BASE_URL`, `VITE_DEFAULT_MODE` (`live`, `pipeline`, `text`, `scripted`)
-- API: `GEMINI_API_KEY`, `GEMINI_LIVE_MODEL`, `GEMINI_TEXT_MODEL`, `GROQ_API_KEY`, `GROQ_STT_MODEL`, `GROQ_LLM_MODEL`, `ALLOWED_ORIGIN`, `RATE_LIMIT_PER_MIN`, `LIVE_TOKEN_TTL_SECONDS`
+- Web: `VITE_CESIUM_ION_TOKEN`, `VITE_MAPILLARY_ACCESS_TOKEN`, `VITE_STREET_LEVEL_PROVIDER` (`auto`, `google`, `mapillary`, `cesium`), `VITE_GOOGLE_MAPS_API_KEY` (optional), `VITE_API_BASE_URL`, `VITE_DEFAULT_MODE` (`live`, `pipeline`, `text`, `scripted`)
+- API: `GEMINI_API_KEY`, `GEMINI_LIVE_MODEL`, `GEMINI_TEXT_MODEL`, `GROQ_API_KEY`, `GROQ_STT_MODEL`, `GROQ_LLM_MODEL`, `GROQ_LLM_MODEL_FALLBACK`, `GROQ_TTS_MODEL`, `GEMINI_TEXT_MODEL_FALLBACK`, `ALLOWED_ORIGIN`, `RATE_LIMIT_PER_MIN`, `LIVE_TOKEN_TTL_SECONDS`
 
-The Maps key is restricted by HTTP referrer (localhost and the deployed domain) and by API. Gemini and Groq keys only live on the server. The browser only ever receives short-lived Live tokens.
+Browser tokens are public by nature, so each is scoped: the Cesium ion token is restricted to the allowed URLs (localhost and the deployed domain) and to the Google 3D Tiles asset, the Mapillary client token is read-only, and the optional Maps key is referrer-restricted. Gemini and Groq keys only live on the server. The browser only ever receives short-lived Live tokens.
 
 ---
 
@@ -160,10 +176,12 @@ Each day ends with: `make check` passing (api and web lint, types, tests, schema
 
 ### Tue 17 Nov: foundations and route data
 
-- [ ] **(Williams)** Check coverage around the Haram on phone: Street View (drag the person icon in Google Maps) and the 3D view in Google Earth
-- [ ] **(Williams)** Choose one hotel 500 to 900 m from a Haram gate, on a route with Street View along most of it
+- [ ] **(Williams)** Check coverage around the Haram: Mapillary imagery on mapillary.com (green lines and dots, prefer 360° images) and the 3D view in Google Earth
+- [ ] **(Williams)** Choose one hotel 500 to 900 m from a Haram gate, on a route with Mapillary imagery at as many stops as possible
+- [ ] **(Williams)** Create a free Cesium ion Community account (cesium.com) and an access token restricted to localhost and the Google Photorealistic 3D Tiles asset
+- [ ] **(Williams)** Get a Mapillary client access token from the Mapillary Developer Portal
 - [ ] **(Williams)** Get free API keys: Gemini (Google AI Studio) and Groq (console.groq.com)
-- [ ] **(Williams)** If Abdiladiif hasn't sent the Maps key by this evening, send a short reminder
+- [ ] **(Williams)** Optional: if Abdiladiif sends a Google Maps key, add it to `.env` to enable Street View as the first street-level provider
 - [x] Scaffold the repo: `apps/web` (pnpm, Vite, React, strict TS), `services/api` (uv, FastAPI), root `Makefile` with `dev`, `check`, `gen`, `test`, `build`
 - [x] Tooling: ruff, mypy strict, pytest, pre-commit for the API. ESLint, Prettier, Vitest, Husky + lint-staged for web. commitlint
 - [x] Config: `pydantic-settings` for the API, a validated env module for web, `.env.example`
@@ -172,34 +190,42 @@ Each day ends with: `make check` passing (api and web lint, types, tests, schema
 - [ ] `data/route.json`: hotel, Haram gate, route coordinates, 4 or 5 stops (position, heading, title, facts). Validated by a pytest
 - [x] API: `GET /health` and `GET /route`, with tests
 - [x] GitHub Actions CI: api job, web job, schema-drift job
-- [x] ADRs: 0001 Python API + TypeScript web with generated types, 0002 Gemini Live with a layered fallback chain, 0003 Maps JS 3D over CesiumJS, 0004 hand-drawn route
+- [x] ADRs: 0001 Python API + TypeScript web with generated types, 0002 Gemini Live with a layered fallback chain, 0003 Maps JS 3D over CesiumJS (superseded by 0005), 0004 hand-drawn route
+- [x] ADR 0005: CesiumJS + Cesium ion for 3D, Mapillary for street level, Google Street View optional
 - [x] Web shell: split layout (chat left, map right), loads the route from the API, responsive, keyboard accessible
 
 **Done when:** CI is green, `route.json` validates, and the shell renders the route data.
 
 ### Wed 18 Nov: 3D map and fly-along
 
+- [ ] Web env: add `VITE_CESIUM_ION_TOKEN` (required), `VITE_MAPILLARY_ACCESS_TOKEN` (optional), `VITE_STREET_LEVEL_PROVIDER` (default `auto`) to `config/env.ts` with tests. The Google key stays optional. Update `.env.example` comments if needed
 - [ ] `MapController` interface plus `FakeMapController` for tests
-- [ ] `GoogleMapController`: load `maps3d`, centre on the hotel, Google attribution visible
-- [ ] Draw the route with `Polyline3DElement` and add markers for the hotel, stops and the gate
+- [ ] CesiumJS set up in Vite (static assets via `vite-plugin-static-copy` or `vite-plugin-cesium`, `CESIUM_BASE_URL`), lazy-loaded so the chat panel renders first
+- [ ] `CesiumMapController`: viewer that loads only Google Photorealistic 3D Tiles from Cesium ion, centred on the hotel. Google logo and Cesium credits visible. The token is restricted to that one asset, so turn off every Cesium default that requests other ion assets or services: create the `Viewer` with `globe: false`, `baseLayer: false`, `baseLayerPicker: false`, `geocoder: false`, `terrain` unset, and also `timeline: false`, `animation: false`, `homeButton: false`, `sceneModePicker: false`, `navigationHelpButton: false`. Show the sky but no ellipsoid. Done when the network tab shows no 401s from ion
+- [ ] Optional fallback (only if Williams adds Cesium World Terrain and Cesium OSM Buildings to the token): if the Google tiles fail to load, enable the globe with World Terrain plus OSM Buildings and show a small notice. Otherwise show a clear error state with the scripted walk still usable
+- [ ] Draw the route as a polyline clamped to the 3D tiles, and add markers (entities) for the hotel, stops and the gate
 - [ ] Camera math module (bearing, path interpolation, camera at each stop), with unit tests
-- [ ] Fly-along: move the camera stop by stop with `flyCameraTo`, pause at each, show `WalkProgress` ("Stop 2 of 5 · 280 m to go")
+- [ ] Fly-along: move the camera stop by stop with `camera.flyTo` (heading and pitch from the camera math), pause at each, show `WalkProgress` ("Stop 2 of 5 · 280 m to go")
 - [ ] Manual controls (start, pause, next stop) so the walk works without the agent
 
 **Done when:** pressing Start flies the route smoothly in real 3D and the camera math tests pass.
 
 ### Thu 19 Nov: street level, walk logic and the agent backend
 
-- [ ] Street View at each stop: nearest outdoor panorama via `getPanorama`, face the walking direction, smooth switch in and out of 3D
-- [ ] If a stop has no panorama, stay in 3D for it (never fake it). Tested with the fake controller
+- [ ] `StreetLevelProvider` interface (`findImagery(stop)`, `show(stop)`, `hide()`), plus a fake for tests
+- [ ] `MapillaryProvider`: query the Graph API for the nearest image to the stop (bbox around the stop, prefer `is_pano`), open a MapillaryJS viewer facing the walking heading, Mapillary attribution with a link
+- [ ] `CesiumStreetHeightProvider`: camera to about 1.7 m above the sampled tile height at the stop, facing the walking heading (always available)
+- [ ] `GoogleStreetViewProvider`: only registered when `VITE_GOOGLE_MAPS_API_KEY` is set (`getPanorama` with outdoor source)
+- [ ] Provider chain: `auto` tries Google (if registered), then Mapillary, then Cesium street height, with smooth switches in and out of the 3D view. Tested with fakes, including "no imagery anywhere"
+- [ ] Optional: pre-resolve each stop's Mapillary image id once and store it in `route.json` (`street_level.mapillary_image_id`) after Williams checks it, so the demo doesn't depend on a live search
 - [ ] Walk state machine (idle, flying, at stop, street view, done), with tests
-- [ ] **(Williams)** Walk the route in Street View and confirm or correct every fact in `route.json`
+- [ ] **(Williams)** Walk the route in Mapillary and the 3D view, and confirm or correct every fact in `route.json`
 - [ ] Agent core (API): system prompt builder injecting route facts and the grounding rule, tool declarations generated from `MapAction`, with tests
 - [ ] `POST /live/token`: creates an ephemeral Gemini Live token with model, prompt and tools locked in, short expiry, rate limited. Tested with the provider mocked
 - [ ] `POST /agent/turn` with `LLMProvider` (Gemini text first, Scripted for tests). Invalid tool calls are dropped and logged
 - [ ] CORS restricted to `ALLOWED_ORIGIN`, error handler, request logging
 
-**Done when:** the full walk with Street View works by hand, and the API returns a valid Live token and valid text-mode replies (mocked in tests).
+**Done when:** the full walk with street-level views works by hand, and the API returns a valid Live token and valid text-mode replies (mocked in tests).
 
 ### Fri 20 Nov: Gemini Live voice (primary path)
 
@@ -221,12 +247,12 @@ Each day ends with: `make check` passing (api and web lint, types, tests, schema
 - [ ] `PipelineSession` (push-to-talk, STT, agent turn, TTS), `TextSession` and `ScriptedSession`
 - [ ] Automatic fallback on connect failure, quota (429) or socket drop, plus a `ModeBadge` and a manual `?mode=` override
 - [ ] Playwright smoke test in scripted mode (conversation, walk start, stop narration), with the map faked
-- [ ] Loading, error and permission states (mic denied, quota hit, Street View missing)
+- [ ] Loading, error and permission states (mic denied, quota hit, no street-level imagery, Cesium token invalid)
 - [ ] Accessibility: keyboard controls, focus order, captions always on, reduced-motion option for camera moves
 
 ### Mon 23 Nov: polish, deploy, deliver
 
-- [ ] Deploy web and API to Vercel and set env vars there. Restrict the Maps key to the deployed domain
+- [ ] Deploy web and API to Vercel and set env vars there. Add the deployed domain to the Cesium ion token's allowed URLs (and to the Maps key, if used)
 - [ ] Test each mode (live, pipeline, text, scripted) on desktop Chrome and on a phone
 - [ ] README: what it is, a GIF, architecture diagram, how to run locally, the fallback chain, decisions (link the ADRs), what's real vs scripted, how the intelligence engine would plug in
 - [ ] Tag `v0.1.0` and write release notes
@@ -237,8 +263,9 @@ Each day ends with: `make check` passing (api and web lint, types, tests, schema
 
 ## 6. Rules for the build
 
-- Never commit keys. Gemini and Groq keys stay on the server. The browser only gets short-lived Live tokens. The Maps key is referrer-restricted.
-- Don't download, store or cache Street View or 3D imagery. Load it live and keep Google's attribution visible.
+- Never commit keys. Gemini and Groq keys stay on the server. The browser only gets short-lived Live tokens and scoped public tokens (Cesium ion, Mapillary, optional Maps key).
+- Don't download, store or cache 3D tiles, Mapillary or Street View imagery. Load it live. Keep the Google logo, Cesium credits and Mapillary attribution visible.
+- Cesium ion's Community plan is for personal, non-commercial use. If Niyvaru uses this commercially, it needs a paid Cesium plan or its own Google Maps Platform key.
 - Every place fact comes from `route.json` and has a `verified_from` value.
 - Pydantic models are the only place schemas are written by hand. Everything else is generated.
 - The repo stays Williams's. Share only the deployed link and the video.

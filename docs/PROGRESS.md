@@ -30,3 +30,11 @@
 **Blockers**
 
 - `data/route.json` needs Williams's route choice.
+
+## Tue 17 Nov 2026: plan change, Cesium ion and Mapillary instead of Google Maps Platform
+
+Google Maps Platform needs a billing account with a card for 3D Tiles and Street View, and Williams can't add one. The plan now uses CesiumJS with Google Photorealistic 3D Tiles via Cesium ion (free) and Mapillary for street level, with Google Street View kept as an optional first provider. See ADR 0005.
+
+- Updated: `docs/BUILD_PLAN.md` (sections 1 to 6 and the Tue, Wed, Thu, Sat and Mon checklists), `CLAUDE.md`, ADR 0003 marked superseded, new ADR 0005, `.env.example` (new web tokens and model names).
+- Not changed: application code. The Day 1 `config/env.ts` update for the new web variables is now the first Wednesday item.
+- New Williams items for today: Cesium ion account and token, Mapillary token, and a Mapillary coverage check before choosing the route.
