@@ -164,16 +164,16 @@ Each day ends with: `make check` passing (api and web lint, types, tests, schema
 - [ ] **(Williams)** Choose one hotel 500 to 900 m from a Haram gate, on a route with Street View along most of it
 - [ ] **(Williams)** Get free API keys: Gemini (Google AI Studio) and Groq (console.groq.com)
 - [ ] **(Williams)** If Abdiladiif hasn't sent the Maps key by this evening, send a short reminder
-- [ ] Scaffold the repo: `apps/web` (pnpm, Vite, React, strict TS), `services/api` (uv, FastAPI), root `Makefile` with `dev`, `check`, `gen`, `test`, `build`
-- [ ] Tooling: ruff, mypy strict, pytest, pre-commit for the API. ESLint, Prettier, Vitest, Husky + lint-staged for web. commitlint
-- [ ] Config: `pydantic-settings` for the API, a validated env module for web, `.env.example`
-- [ ] Pydantic schemas: `RouteData`, `Stop`, `Fact` (with `verified_from`), `TravellerProfile`, `MapAction` (discriminated union), `AgentTurnRequest`, `AgentTurnResponse`, with tests
-- [ ] Schema pipeline: `export_schemas.py` writes `schemas/*.json`, `make gen` generates `packages/shared` TS types, CI fails on drift
+- [x] Scaffold the repo: `apps/web` (pnpm, Vite, React, strict TS), `services/api` (uv, FastAPI), root `Makefile` with `dev`, `check`, `gen`, `test`, `build`
+- [x] Tooling: ruff, mypy strict, pytest, pre-commit for the API. ESLint, Prettier, Vitest, Husky + lint-staged for web. commitlint
+- [x] Config: `pydantic-settings` for the API, a validated env module for web, `.env.example`
+- [x] Pydantic schemas: `RouteData`, `Stop`, `Fact` (with `verified_from`), `TravellerProfile`, `MapAction` (discriminated union), `AgentTurnRequest`, `AgentTurnResponse`, with tests
+- [x] Schema pipeline: `export_schemas.py` writes `schemas/*.json`, `make gen` generates `packages/shared` TS types, CI fails on drift
 - [ ] `data/route.json`: hotel, Haram gate, route coordinates, 4 or 5 stops (position, heading, title, facts). Validated by a pytest
-- [ ] API: `GET /health` and `GET /route`, with tests
-- [ ] GitHub Actions CI: api job, web job, schema-drift job
-- [ ] ADRs: 0001 Python API + TypeScript web with generated types, 0002 Gemini Live with a layered fallback chain, 0003 Maps JS 3D over CesiumJS, 0004 hand-drawn route
-- [ ] Web shell: split layout (chat left, map right), loads the route from the API, responsive, keyboard accessible
+- [x] API: `GET /health` and `GET /route`, with tests
+- [x] GitHub Actions CI: api job, web job, schema-drift job
+- [x] ADRs: 0001 Python API + TypeScript web with generated types, 0002 Gemini Live with a layered fallback chain, 0003 Maps JS 3D over CesiumJS, 0004 hand-drawn route
+- [x] Web shell: split layout (chat left, map right), loads the route from the API, responsive, keyboard accessible
 
 **Done when:** CI is green, `route.json` validates, and the shell renders the route data.
 
