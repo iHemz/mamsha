@@ -38,3 +38,13 @@ Google Maps Platform needs a billing account with a card for 3D Tiles and Street
 - Updated: `docs/BUILD_PLAN.md` (sections 1 to 6 and the Tue, Wed, Thu, Sat and Mon checklists), `CLAUDE.md`, ADR 0003 marked superseded, new ADR 0005, `.env.example` (new web tokens and model names).
 - Not changed: application code. The Day 1 `config/env.ts` update for the new web variables is now the first Wednesday item.
 - New Williams items for today: Cesium ion account and token, Mapillary token, and a Mapillary coverage check before choosing the route.
+
+## Wed 18 Nov 2026: replan after Abdiladiif's reply
+
+No build work today. Abdiladiif confirmed: the experience only (no hotel APIs), any hotel and route, "as close to 100% real as possible", no Google Maps project from Niyvaru, and quality over speed.
+
+- Realism is now the main success criterion, with three core parts: sight, sound and voice. New "Realism layer" section in `docs/BUILD_PLAN.md`: eye-height walking camera along the full path, local time-of-day lighting with shadows and atmosphere, crossfades to street-level photos, a licensed ambient soundscape that follows the walk and ducks under the voice.
+- Days replanned: Thu 19 3D and walking camera, Fri 20 street level, light and sound, Sat 21 agent backend, Mon 23 Gemini Live voice, Tue 24 fallback chain and hardening, Wed 25 polish, deploy and deliver. Target moved from Mon 23 to Wed 25.
+- The project is also a portfolio piece: public-facing text stays free of Niyvaru's name and private details (rule in `CLAUDE.md` and `BUILD_PLAN.md`).
+- Still open from Day 1: `data/route.json`, waiting on Williams's route choice.
+

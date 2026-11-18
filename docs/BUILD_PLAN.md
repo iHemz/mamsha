@@ -1,8 +1,9 @@
-# Build plan: Niyvaru hotel-to-Haram walk demo
+# Build plan: Mamsha, a hotel-to-Haram walk you can take before you travel
 
 **Owner:** Williams Balogun
-**Deadline:** Monday 23 November 2026 (send to Abdiladiif)
-**Budget:** about 4 hours a day, Tue 17 to Mon 23 (Sat 21 is a planned working day for the fallback chain and hardening)
+**Target:** Wednesday 25 November 2026 (Abdiladiif said quality matters more than speed, so the earlier Monday 23 target moved by two working days to fit the realism work)
+**Budget:** about 4 hours a day. Thu 19, Fri 20, Sat 21, Mon 23, Tue 24, Wed 25. Sunday off
+**Purpose:** a demo for Niyvaru and, whatever happens there, a portfolio-grade project in its own right
 **Timezone for "today":** Africa/Lagos
 
 Items marked **(Williams)** need a human. Claude Code must not tick them, and should remind Williams about them at the start of the day they fall on.
@@ -18,11 +19,16 @@ A single page, split in two:
 
 The agent's speech drives the map through tool calls. It selects the hotel, draws the walking route, and flies the camera along it. At 4 or 5 stops it drops to street level facing the direction of walking (real 360° photos from Mapillary, or Google Street View if a Maps key is available) and explains what matters there for *this* traveller (slope, steps, crossings, entrance, a nearby pharmacy). Change the traveller profile and the narration changes.
 
-**Success criteria (what Abdiladiif should feel):**
-1. The streets look real (real 3D imagery and real street-level photos, not generated models).
+**Success criteria:**
+1. **It feels like being there.** Abdiladiif's words: "as close to 100% real as possible, almost as if I'm physically there". Realism has three parts, and all three are core:
+   - **Sight:** real 3D imagery and real street-level photos, seen from eye height at walking pace, in natural light.
+   - **Sound:** an ambient soundscape of the streets and the Haram that changes as you walk.
+   - **Voice:** a natural, real-time spoken companion that can be interrupted, like walking with a knowledgeable friend.
 2. The agent clearly understands the traveller's circumstances.
 3. Voice, agent and map move together. It's not a chatbot sitting next to a map.
-4. It never breaks during his review (a layered fallback chain ends in a scripted mode).
+4. It never breaks during a review (a layered fallback chain ends in a scripted mode).
+
+**Scope note (18 Nov):** Abdiladiif confirmed there is no need for hotel APIs or anything beyond the experience, and that any hotel and route in Makkah is fine. Choose the route for the best imagery, then the hotel on it.
 
 **Out of scope for this demo:** booking, multiple hotels, accounts, payments, the internal intelligence engine (the backend is laid out so it can be added later), mobile apps.
 
@@ -78,6 +84,16 @@ The demo must work with no paid Google Maps account. See ADR 0005.
   2. **Mapillary**: the nearest image to the stop through the Mapillary Graph API, preferring 360° panoramas, shown in a MapillaryJS viewer facing the walking direction.
   3. **Cesium street-height camera**: no photo exists, so the 3D camera drops to eye height (about 1.7 m above the ground, sampled from the 3D tiles) and faces the walking direction. Never fake imagery.
 - `VITE_STREET_LEVEL_PROVIDER` can force one provider (`auto`, `google`, `mapillary`, `cesium`). `auto` follows the order above.
+
+### Realism layer
+
+Everything here sits on top of `MapController` and is tested with fakes where it has logic.
+
+- **Walking camera:** the walk follows the whole route path, not stop-to-stop jumps. Eye height about 1.7 m above the sampled 3D tile height, walking pace (about 1.3 m/s, with a speed control for demos), heading eased smoothly through corners, small pitch toward the ground ahead. Optional subtle step bob, off when reduced motion is on.
+- **Light:** Cesium clock set to a chosen local Makkah time (default late afternoon) with sun lighting and shadows on, plus atmosphere and slight distance fog so the city doesn't look like a model.
+- **Transitions:** crossfade between the 3D view and street-level photos (Mapillary or Street View) instead of hard cuts, aligned to the walking heading.
+- **Soundscape:** licensed ambient recordings (CC0 or CC-BY, with every source listed in `apps/web/public/audio/CREDITS.md`): street and crowd sound along the route, rising Haram ambience near the gate, and an adhan clip only if a properly licensed recording is found. Volume follows distance along the route. Ambience ducks automatically under the agent's voice. Mute button and a "sound on" prompt, since browsers block autoplay.
+- **Voice:** Gemini Live native audio, captions always on, interruptions stop playback instantly. Aim for replies starting within about a second.
 
 ### Agent tools (map actions)
 
@@ -196,68 +212,88 @@ Each day ends with: `make check` passing (api and web lint, types, tests, schema
 
 **Done when:** CI is green, `route.json` validates, and the shell renders the route data.
 
-### Wed 18 Nov: 3D map and fly-along
+### Wed 18 Nov: replanned
 
-- [ ] Web env: add `VITE_CESIUM_ION_TOKEN` (required), `VITE_MAPILLARY_ACCESS_TOKEN` (optional), `VITE_STREET_LEVEL_PROVIDER` (default `auto`) to `config/env.ts` with tests. The Google key stays optional. Update `.env.example` comments if needed
+No build work on Wed 18. Abdiladiif replied (scope is the experience only, any route, take the time needed), so the remaining days were replanned below with realism first and voice kept core.
+
+- [ ] **(Williams)** Check Google's 3D coverage of central Makkah in Google Earth (3D on). Realistic textured buildings mean the Cesium plan works. Flat grey blocks mean stop and replan before Thursday's 3D work
+- [ ] **(Williams)** Pick the route for the best imagery: Mapillary clusters were seen near Jabal Omar (west) and on the southern approach near Ibrahim Al Khalil Road. Then pick a hotel on it, 500 to 900 m from a gate
+- [ ] **(Williams)** Draft `data/route.json` details (hotel, gate, path, 4 or 5 stops, facts with `verified_from`) so the Day 1 route item can close
+
+### Thu 19 Nov: 3D city and the walking camera
+
+- [ ] Web env: add `VITE_CESIUM_ION_TOKEN` (required), `VITE_MAPILLARY_ACCESS_TOKEN` (optional), `VITE_STREET_LEVEL_PROVIDER` (default `auto`) to `config/env.ts` with tests. The Google key stays optional
 - [ ] `MapController` interface plus `FakeMapController` for tests
 - [ ] CesiumJS set up in Vite (static assets via `vite-plugin-static-copy` or `vite-plugin-cesium`, `CESIUM_BASE_URL`), lazy-loaded so the chat panel renders first
 - [ ] `CesiumMapController`: viewer that loads only Google Photorealistic 3D Tiles from Cesium ion, centred on the hotel. Google logo and Cesium credits visible. The token is restricted to that one asset, so turn off every Cesium default that requests other ion assets or services: create the `Viewer` with `globe: false`, `baseLayer: false`, `baseLayerPicker: false`, `geocoder: false`, `terrain` unset, and also `timeline: false`, `animation: false`, `homeButton: false`, `sceneModePicker: false`, `navigationHelpButton: false`. Show the sky but no ellipsoid. Done when the network tab shows no 401s from ion
 - [ ] Optional fallback (only if Williams adds Cesium World Terrain and Cesium OSM Buildings to the token): if the Google tiles fail to load, enable the globe with World Terrain plus OSM Buildings and show a small notice. Otherwise show a clear error state with the scripted walk still usable
-- [ ] Draw the route as a polyline clamped to the 3D tiles, and add markers (entities) for the hotel, stops and the gate
-- [ ] Camera math module (bearing, path interpolation, camera at each stop), with unit tests
-- [ ] Fly-along: move the camera stop by stop with `camera.flyTo` (heading and pitch from the camera math), pause at each, show `WalkProgress` ("Stop 2 of 5 · 280 m to go")
-- [ ] Manual controls (start, pause, next stop) so the walk works without the agent
+- [ ] Route as a polyline clamped to the 3D tiles, markers for the hotel, stops and the gate
+- [ ] Camera math module: bearing, distance, path interpolation by distance, eased heading through corners, eye-height sampling. Unit tests
+- [ ] Walking camera (see Realism layer): follows the full path at walking pace from eye height, pauses at stops, speed control, `WalkProgress` ("Stop 2 of 5 · 280 m to go"). An aerial "overview" shot at the start, then it lowers to eye height at the hotel door
+- [ ] Manual controls (start, pause, next stop, speed) so the walk works without the agent
 
-**Done when:** pressing Start flies the route smoothly in real 3D and the camera math tests pass.
+**Done when:** pressing Start walks the route at eye height in real 3D, smoothly, and the camera math tests pass.
 
-### Thu 19 Nov: street level, walk logic and the agent backend
+### Fri 20 Nov: street level, light and sound
 
 - [ ] `StreetLevelProvider` interface (`findImagery(stop)`, `show(stop)`, `hide()`), plus a fake for tests
-- [ ] `MapillaryProvider`: query the Graph API for the nearest image to the stop (bbox around the stop, prefer `is_pano`), open a MapillaryJS viewer facing the walking heading, Mapillary attribution with a link
-- [ ] `CesiumStreetHeightProvider`: camera to about 1.7 m above the sampled tile height at the stop, facing the walking heading (always available)
-- [ ] `GoogleStreetViewProvider`: only registered when `VITE_GOOGLE_MAPS_API_KEY` is set (`getPanorama` with outdoor source)
-- [ ] Provider chain: `auto` tries Google (if registered), then Mapillary, then Cesium street height, with smooth switches in and out of the 3D view. Tested with fakes, including "no imagery anywhere"
-- [ ] Optional: pre-resolve each stop's Mapillary image id once and store it in `route.json` (`street_level.mapillary_image_id`) after Williams checks it, so the demo doesn't depend on a live search
-- [ ] Walk state machine (idle, flying, at stop, street view, done), with tests
+- [ ] `MapillaryProvider`: Graph API query for the nearest image to the stop (bbox around it, prefer `is_pano`), MapillaryJS viewer facing the walking heading, Mapillary attribution with a link
+- [ ] `CesiumStreetHeightProvider`: the eye-height camera at the stop, facing the walking heading (always available)
+- [ ] `GoogleStreetViewProvider`: only registered when `VITE_GOOGLE_MAPS_API_KEY` is set
+- [ ] Provider chain: `auto` tries Google (if registered), then Mapillary, then Cesium street height. Tested with fakes, including "no imagery anywhere"
+- [ ] Crossfade transitions between the 3D view and street-level photos
+- [ ] Optional: pin each stop's Mapillary image id in `route.json` (`street_level.mapillary_image_id`) after Williams checks it, so the demo doesn't depend on a live search
+- [ ] Lighting: local Makkah time of day, sun lighting, shadows, atmosphere and light fog. A time-of-day setting
+- [ ] Soundscape engine (Web Audio): ambient layers whose volume follows distance along the route, ducking API for the voice, mute, autoplay prompt. Unit tests for the volume curves
+- [ ] **(Williams)** Choose the ambient recordings (Freesound or similar, CC0 or CC-BY only) and add each to `apps/web/public/audio/CREDITS.md`
+- [ ] Walk state machine (idle, overview, walking, at stop, street level, done), with tests
 - [ ] **(Williams)** Walk the route in Mapillary and the 3D view, and confirm or correct every fact in `route.json`
+
+**Done when:** a full walk with light, street-level stops and sound feels like a walk, and the provider chain and state machine tests pass.
+
+### Sat 21 Nov: agent backend
+
 - [ ] Agent core (API): system prompt builder injecting route facts and the grounding rule, tool declarations generated from `MapAction`, with tests
-- [ ] `POST /live/token`: creates an ephemeral Gemini Live token with model, prompt and tools locked in, short expiry, rate limited. Tested with the provider mocked
+- [ ] Fix the Ajv discriminator issue noted on Day 1 (Pydantic's `discriminator.mapping`), so the browser can validate `MapAction`
+- [ ] `POST /live/token`: ephemeral Gemini Live token with model, prompt, tools and voice locked in, short expiry, rate limited. Tested with the provider mocked
 - [ ] `POST /agent/turn` with `LLMProvider` (Gemini text first, Scripted for tests). Invalid tool calls are dropped and logged
 - [ ] CORS restricted to `ALLOWED_ORIGIN`, error handler, request logging
 
-**Done when:** the full walk with street-level views works by hand, and the API returns a valid Live token and valid text-mode replies (mocked in tests).
+**Done when:** the API returns a valid Live token and valid text-mode replies (mocked in tests).
 
-### Fri 20 Nov: Gemini Live voice (primary path)
+### Mon 23 Nov: Gemini Live voice
 
 - [ ] `VoiceSession` interface and `GeminiLiveSession`: fetch the token, open the Live WebSocket, handle setup and close
 - [ ] Mic capture with an AudioWorklet, resampled to 16 kHz PCM and streamed
-- [ ] Audio playback of 24 kHz PCM with a small buffer, and stop playback instantly on interruption
+- [ ] Playback of 24 kHz PCM with a small buffer, through the soundscape's ducking, stopping instantly on interruption
 - [ ] Captions from input and output transcription
-- [ ] Tool calls: validate with Ajv against the shared JSON Schema, run through the dispatcher on the `MapController`, send tool responses back to the session
+- [ ] Tool calls: validate with Ajv, run through the dispatcher on `MapController`, send tool responses back
 - [ ] `arrived_at_stop` events sent into the session during the walk
 - [ ] Profile toggle (wheelchair family, young couple) feeds into the conversation
-- [ ] Unit tests for the PCM conversion and the dispatcher. The session itself is tested against a fake WebSocket
+- [ ] Unit tests for PCM conversion and the dispatcher. The session is tested against a fake WebSocket
 
-**Done when:** a spoken conversation selects the hotel, starts the walk, narrates each stop for the profile, and can be interrupted.
+**Done when:** a spoken conversation selects the hotel, starts the walk, narrates each stop for the profile over the ambience, and can be interrupted.
 
-### Sat 21 Nov: fallback chain and hardening
+### Tue 24 Nov: fallback chain and hardening
 
 - [ ] `POST /stt` with `STTProvider` (Groq Whisper), with size and type limits and tests
-- [ ] Groq LLM as the backup `LLMProvider` behind `/agent/turn`
-- [ ] `PipelineSession` (push-to-talk, STT, agent turn, TTS), `TextSession` and `ScriptedSession`
-- [ ] Automatic fallback on connect failure, quota (429) or socket drop, plus a `ModeBadge` and a manual `?mode=` override
-- [ ] Playwright smoke test in scripted mode (conversation, walk start, stop narration), with the map faked
-- [ ] Loading, error and permission states (mic denied, quota hit, no street-level imagery, Cesium token invalid)
-- [ ] Accessibility: keyboard controls, focus order, captions always on, reduced-motion option for camera moves
+- [ ] Groq LLM as the backup `LLMProvider`, Groq Orpheus as the pipeline TTS, browser `speechSynthesis` last
+- [ ] `PipelineSession`, `TextSession` and `ScriptedSession`
+- [ ] Automatic fallback on connect failure, quota (429) or socket drop, `ModeBadge`, manual `?mode=` override
+- [ ] Playwright smoke test in scripted mode with the map faked
+- [ ] Loading, error and permission states (mic denied, quota hit, no street-level imagery, Cesium token invalid, audio blocked)
+- [ ] Accessibility: keyboard controls, focus order, captions always on, reduced motion (no step bob, gentler camera), mute
 
-### Mon 23 Nov: polish, deploy, deliver
+### Wed 25 Nov: portfolio polish, deploy, deliver
 
-- [ ] Deploy web and API to Vercel and set env vars there. Add the deployed domain to the Cesium ion token's allowed URLs (and to the Maps key, if used)
+- [ ] Performance pass: tile loading quality versus speed, a loading screen while the first tiles stream, check on a mid-range laptop and a phone
+- [ ] Deploy web and API to Vercel and set env vars. Add the deployed domain to the Cesium ion token's allowed URLs
 - [ ] Test each mode (live, pipeline, text, scripted) on desktop Chrome and on a phone
-- [ ] README: what it is, a GIF, architecture diagram, how to run locally, the fallback chain, decisions (link the ADRs), what's real vs scripted, how the intelligence engine would plug in
+- [ ] Portfolio-grade README: a short video or GIF at the top, what it is, the realism approach (sight, sound, voice), architecture diagram, the fallback chains, decisions (link the ADRs), how to run locally, what's real vs scripted, credits and licences, how the intelligence engine would plug in
 - [ ] Tag `v0.1.0` and write release notes
-- [ ] **(Williams)** Record a 60 to 90 second screen video of the full flow (backup in case the link has problems)
-- [ ] **(Williams)** Email Abdiladiif: the link, the video, a short note on the approach and next steps, and a reminder about the terms
+- [ ] **(Williams)** Record a 60 to 90 second screen video with sound (also the README hero)
+- [ ] **(Williams)** Email Abdiladiif: the link, the video, a short note on the approach and next steps, and ask for a call to discuss the partnership
+- [ ] **(Williams)** Decide the repo's visibility before making it public (see Rules)
 
 ---
 
@@ -268,5 +304,7 @@ Each day ends with: `make check` passing (api and web lint, types, tests, schema
 - Cesium ion's Community plan is for personal, non-commercial use. If Niyvaru uses this commercially, it needs a paid Cesium plan or its own Google Maps Platform key.
 - Every place fact comes from `route.json` and has a `verified_from` value.
 - Pydantic models are the only place schemas are written by hand. Everything else is generated.
-- The repo stays Williams's. Share only the deployed link and the video.
+- The repo stays Williams's. Share only the deployed link and the video with Niyvaru.
+- Portfolio framing: present it as Mamsha, a walk-before-you-travel experience. Keep Niyvaru's name, business details and anything Abdiladiif shared privately out of the public repo, README and commit messages. Keep the repo private until Williams has decided, ideally after mentioning to Abdiladiif that he'd like to show it in his portfolio.
+- Audio is only used under CC0 or CC-BY (or similar) licences, with every source credited in `apps/web/public/audio/CREDITS.md`.
 - Small conventional commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`), one concern each.
