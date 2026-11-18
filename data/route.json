@@ -1,0 +1,201 @@
+{
+  "hotel": {
+    "id": "emaar-andalusia",
+    "name": "Emaar Andalusia Hotel Makkah",
+    "position": {
+      "lat": 21.41525,
+      "lng": 39.822418
+    },
+    "facts": [
+      {
+        "id": "hotel-walk-length",
+        "text": "The walk from the hotel to King Abdul Aziz Gate is about 870 metres along pedestrian streets, roughly 12 to 15 minutes at an easy pace.",
+        "profiles": ["wheelchair_family", "young_couple"],
+        "verified_from": "OpenStreetMap path, measured Nov 2026, confirmed by Williams 18 Nov 2026"
+      }
+    ]
+  },
+  "gate": {
+    "id": "king-abdul-aziz-gate-1",
+    "name": "King Abdul Aziz Gate (Gate 1)",
+    "position": {
+      "lat": 21.421045,
+      "lng": 39.825841
+    },
+    "facts": [
+      {
+        "id": "gate-1-name",
+        "text": "This is King Abdul Aziz Gate, numbered Gate 1, on the south side of the Haram facing the Clock Tower.",
+        "profiles": ["wheelchair_family", "young_couple"],
+        "verified_from": "OpenStreetMap node 4755914231, Nov 2026, confirmed by Williams 18 Nov 2026"
+      }
+    ]
+  },
+  "path": [
+    {
+      "lat": 21.41525,
+      "lng": 39.822418
+    },
+    {
+      "lat": 21.415071,
+      "lng": 39.822839
+    },
+    {
+      "lat": 21.415887,
+      "lng": 39.822964
+    },
+    {
+      "lat": 21.416547,
+      "lng": 39.823066
+    },
+    {
+      "lat": 21.416911,
+      "lng": 39.823125
+    },
+    {
+      "lat": 21.417757,
+      "lng": 39.823286
+    },
+    {
+      "lat": 21.417983,
+      "lng": 39.823329
+    },
+    {
+      "lat": 21.418342,
+      "lng": 39.823511
+    },
+    {
+      "lat": 21.418574,
+      "lng": 39.823771
+    },
+    {
+      "lat": 21.41994,
+      "lng": 39.824685
+    },
+    {
+      "lat": 21.420015,
+      "lng": 39.824735
+    },
+    {
+      "lat": 21.420358,
+      "lng": 39.824955
+    },
+    {
+      "lat": 21.420252,
+      "lng": 39.825791
+    },
+    {
+      "lat": 21.420875,
+      "lng": 39.82589
+    },
+    {
+      "lat": 21.421045,
+      "lng": 39.825841
+    }
+  ],
+  "stops": [
+    {
+      "id": "stop-1-al-mesial-road",
+      "title": "Onto Al Mesial Road",
+      "position": {
+        "lat": 21.4166,
+        "lng": 39.823075
+      },
+      "heading": 9,
+      "facts": [
+        {
+          "id": "stop-1-pedestrian-street",
+          "text": "From here the route follows Al Mesial Road, a pedestrian street, most of the way to the Clock Tower plaza.",
+          "profiles": ["wheelchair_family", "young_couple"],
+          "verified_from": "OpenStreetMap way 565570660, Nov 2026, confirmed by Williams 18 Nov 2026"
+        }
+      ]
+    },
+    {
+      "id": "stop-2-ring-road-bridge",
+      "title": "Under the First Ring Road",
+      "position": {
+        "lat": 21.4178,
+        "lng": 39.823295
+      },
+      "heading": 10,
+      "facts": [
+        {
+          "id": "stop-2-bridge",
+          "text": "The First Ring Road crosses overhead here on a bridge, so the street runs underneath it.",
+          "profiles": ["wheelchair_family", "young_couple"],
+          "verified_from": "OpenStreetMap ways 9544185 and 80208473, Nov 2026, confirmed by Williams 18 Nov 2026"
+        }
+      ]
+    },
+    {
+      "id": "stop-3-clock-tower-approach",
+      "title": "Approaching the Clock Tower",
+      "position": {
+        "lat": 21.41895,
+        "lng": 39.82402
+      },
+      "heading": 32,
+      "facts": [
+        {
+          "id": "stop-3-pharmacies",
+          "text": "Two pharmacies are mapped close by: Dhiouf Makkah, just beside the route, and an Al Nahdi pharmacy a little further on.",
+          "profiles": ["wheelchair_family", "young_couple"],
+          "verified_from": "OpenStreetMap nodes 6214483638 and 6587383192, Nov 2026, confirmed by Williams 18 Nov 2026"
+        },
+        {
+          "id": "stop-3-food-court",
+          "text": "There's an entrance to the food courts on the third floor of the Abraj Al Bait (Clock Tower) complex just ahead.",
+          "profiles": ["young_couple"],
+          "verified_from": "OpenStreetMap node 7530037908, Nov 2026, confirmed by Williams 18 Nov 2026"
+        }
+      ]
+    },
+    {
+      "id": "stop-4-clock-tower-plaza",
+      "title": "Clock Tower plaza",
+      "position": {
+        "lat": 21.42004,
+        "lng": 39.82475
+      },
+      "heading": 31,
+      "facts": [
+        {
+          "id": "stop-4-steps-west",
+          "text": "Flights of steps are mapped to the west of here, towards Hamza Ibn Abdul Mutalib Street, so stay on the plaza level.",
+          "profiles": ["wheelchair_family"],
+          "verified_from": "OpenStreetMap ways 563955380 and 563955381, Nov 2026, confirmed by Williams 18 Nov 2026"
+        },
+        {
+          "id": "stop-4-hospital",
+          "text": "Ajyad Emergency Hospital is mapped about 170 metres to the east.",
+          "profiles": ["wheelchair_family", "young_couple"],
+          "verified_from": "OpenStreetMap node 5076188152, Nov 2026, confirmed by Williams 18 Nov 2026"
+        },
+        {
+          "id": "stop-4-prayer-hall",
+          "text": "A prayer hall inside the Abraj Al Bait complex is about 110 metres to the south-east.",
+          "profiles": ["young_couple"],
+          "verified_from": "OpenStreetMap node 5923016911, Nov 2026, confirmed by Williams 18 Nov 2026"
+        }
+      ]
+    },
+    {
+      "id": "stop-5-gate-approach",
+      "title": "The final approach to Gate 1",
+      "position": {
+        "lat": 21.4207,
+        "lng": 39.825862
+      },
+      "heading": 8,
+      "facts": [
+        {
+          "id": "stop-5-gate-ahead",
+          "text": "King Abdul Aziz Gate is straight ahead, about 40 metres away.",
+          "profiles": ["wheelchair_family", "young_couple"],
+          "verified_from": "OpenStreetMap path, measured Nov 2026, confirmed by Williams 18 Nov 2026"
+        }
+      ]
+    }
+  ]
+}
