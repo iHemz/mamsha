@@ -48,3 +48,11 @@ No build work today. Abdiladiif confirmed: the experience only (no hotel APIs), 
 - The project is also a portfolio piece: public-facing text stays free of Niyvaru's name and private details (rule in `CLAUDE.md` and `BUILD_PLAN.md`).
 - Still open from Day 1: `data/route.json`, waiting on Williams's route choice.
 
+## Wed 18 Nov 2026: route drafted and confirmed
+
+- Williams confirmed Google Earth shows realistic 3D for central Makkah, so the Cesium plan stands.
+- Route chosen for imagery: Emaar Andalusia Hotel Makkah to King Abdul Aziz Gate (Gate 1), about 870 m along Al Mesial Road (pedestrian) and the Clock Tower plaza. Mapillary photos from June 2026 sit within about 25 m of every stop.
+- Written to `data/route.json` (validates against `RouteData`, 5 stops, both profiles at every stop). Review checklist with photo links in `docs/route-review.md`.
+- Williams confirmed all 10 facts, and each `verified_from` now records that. The Day 1 `route.json` item and his review item are his to tick.
+
+- Day 1 closed: Williams completed the route review, and the Cesium ion, Mapillary, Gemini and Groq keys are in `.env`. No Google Maps key, so Street View stays off. Next: Thu 19 3D city and walking camera.

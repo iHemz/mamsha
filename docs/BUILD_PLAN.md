@@ -192,18 +192,18 @@ Each day ends with: `make check` passing (api and web lint, types, tests, schema
 
 ### Tue 17 Nov: foundations and route data
 
-- [ ] **(Williams)** Check coverage around the Haram: Mapillary imagery on mapillary.com (green lines and dots, prefer 360° images) and the 3D view in Google Earth
-- [ ] **(Williams)** Choose one hotel 500 to 900 m from a Haram gate, on a route with Mapillary imagery at as many stops as possible
-- [ ] **(Williams)** Create a free Cesium ion Community account (cesium.com) and an access token restricted to localhost and the Google Photorealistic 3D Tiles asset
-- [ ] **(Williams)** Get a Mapillary client access token from the Mapillary Developer Portal
-- [ ] **(Williams)** Get free API keys: Gemini (Google AI Studio) and Groq (console.groq.com)
-- [ ] **(Williams)** Optional: if Abdiladiif sends a Google Maps key, add it to `.env` to enable Street View as the first street-level provider
+- [x] **(Williams)** Check coverage around the Haram: Mapillary imagery on mapillary.com (green lines and dots, prefer 360° images) and the 3D view in Google Earth
+- [x] **(Williams)** Choose one hotel 500 to 900 m from a Haram gate, on a route with Mapillary imagery at as many stops as possible
+- [x] **(Williams)** Create a free Cesium ion Community account (cesium.com) and an access token restricted to localhost and the Google Photorealistic 3D Tiles asset
+- [x] **(Williams)** Get a Mapillary client access token from the Mapillary Developer Portal
+- [x] **(Williams)** Get free API keys: Gemini (Google AI Studio) and Groq (console.groq.com)
+- [x] **(Williams)** Optional: if Abdiladiif sends a Google Maps key, add it to `.env` to enable Street View as the first street-level provider
 - [x] Scaffold the repo: `apps/web` (pnpm, Vite, React, strict TS), `services/api` (uv, FastAPI), root `Makefile` with `dev`, `check`, `gen`, `test`, `build`
 - [x] Tooling: ruff, mypy strict, pytest, pre-commit for the API. ESLint, Prettier, Vitest, Husky + lint-staged for web. commitlint
 - [x] Config: `pydantic-settings` for the API, a validated env module for web, `.env.example`
 - [x] Pydantic schemas: `RouteData`, `Stop`, `Fact` (with `verified_from`), `TravellerProfile`, `MapAction` (discriminated union), `AgentTurnRequest`, `AgentTurnResponse`, with tests
 - [x] Schema pipeline: `export_schemas.py` writes `schemas/*.json`, `make gen` generates `packages/shared` TS types, CI fails on drift
-- [ ] `data/route.json`: hotel, Haram gate, route coordinates, 4 or 5 stops (position, heading, title, facts). Validated by a pytest
+- [x] `data/route.json`: hotel, Haram gate, route coordinates, 4 or 5 stops (position, heading, title, facts). Validated by a pytest
 - [x] API: `GET /health` and `GET /route`, with tests
 - [x] GitHub Actions CI: api job, web job, schema-drift job
 - [x] ADRs: 0001 Python API + TypeScript web with generated types, 0002 Gemini Live with a layered fallback chain, 0003 Maps JS 3D over CesiumJS (superseded by 0005), 0004 hand-drawn route
@@ -216,9 +216,10 @@ Each day ends with: `make check` passing (api and web lint, types, tests, schema
 
 No build work on Wed 18. Abdiladiif replied (scope is the experience only, any route, take the time needed), so the remaining days were replanned below with realism first and voice kept core.
 
-- [ ] **(Williams)** Check Google's 3D coverage of central Makkah in Google Earth (3D on). Realistic textured buildings mean the Cesium plan works. Flat grey blocks mean stop and replan before Thursday's 3D work
-- [ ] **(Williams)** Pick the route for the best imagery: Mapillary clusters were seen near Jabal Omar (west) and on the southern approach near Ibrahim Al Khalil Road. Then pick a hotel on it, 500 to 900 m from a gate
-- [ ] **(Williams)** Draft `data/route.json` details (hotel, gate, path, 4 or 5 stops, facts with `verified_from`) so the Day 1 route item can close
+- [x] **(Williams)** Check Google's 3D coverage of central Makkah in Google Earth (3D on). Realistic textured buildings mean the Cesium plan works. Flat grey blocks mean stop and replan before Thursday's 3D work
+- [x] **(Williams)** Pick the route for the best imagery: Mapillary clusters were seen near Jabal Omar (west) and on the southern approach near Ibrahim Al Khalil Road. Then pick a hotel on it, 500 to 900 m from a gate
+- [x] **(Williams)** Draft `data/route.json` details (hotel, gate, path, 4 or 5 stops, facts with `verified_from`) so the Day 1 route item can close
+- [x] **(Williams)** Review the drafted route with `docs/route-review.md` (draft in `data/route.draft.json`: Emaar Andalusia to King Abdul Aziz Gate along Al Mesial Road), then rename it to `data/route.json`
 
 ### Thu 19 Nov: 3D city and the walking camera
 
