@@ -18,7 +18,7 @@ export function App({ loadRoute, createMap }: AppProps) {
         Skip to content
       </a>
       <header className="app-header">
-        <h1>Niyvaru · Hotel to Haram walk</h1>
+        <h1>Mamsha · Hotel to Haram walk</h1>
       </header>
       <main id="main" className="layout" tabIndex={-1}>
         <ChatPanel />
