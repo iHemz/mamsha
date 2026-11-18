@@ -12,6 +12,14 @@ from app.main import create_app
 FIXTURES = Path(__file__).parent / "fixtures"
 
 
+@pytest.fixture(autouse=True)
+def _clean_settings_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Tests must not see the developer's shell, which may already hold real keys
+    # (some editors load `.env` into every integrated terminal).
+    for name in Settings.model_fields:
+        monkeypatch.delenv(name.upper(), raising=False)
+
+
 @pytest.fixture
 def sample_route_path() -> Path:
     return FIXTURES / "route.sample.json"
