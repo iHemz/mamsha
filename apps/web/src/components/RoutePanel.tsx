@@ -1,12 +1,14 @@
 import type { RouteState } from "../agent/useRoute";
+import { type CreateMap, MapView } from "../map/MapView";
 
 interface RoutePanelProps {
   state: RouteState;
   onRetry: () => void;
+  createMap: CreateMap | undefined;
 }
 
-/** The city side. Shows the route summary until the 3D map takes over this space. */
-export function RoutePanel({ state, onRetry }: RoutePanelProps) {
+/** The city side: the route summary and the 3D map. */
+export function RoutePanel({ state, onRetry, createMap }: RoutePanelProps) {
   return (
     <section
       className="panel route-panel"
@@ -38,9 +40,7 @@ export function RoutePanel({ state, onRetry }: RoutePanelProps) {
               <li key={stop.id}>{stop.title}</li>
             ))}
           </ol>
-          <div className="map-placeholder" aria-hidden="true">
-            3D map
-          </div>
+          <MapView createMap={createMap} route={state.route} />
         </>
       )}
     </section>
