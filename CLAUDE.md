@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This repo is a demo for Niyvaru: a real-time voice agent that walks a traveller from a Makkah hotel to the Haram through real 3D imagery (Google Photorealistic 3D Tiles via Cesium ion, rendered with CesiumJS) and real street-level photos (Mapillary, or Google Street View when a key exists). The web app is TypeScript (Vite + React). The API is Python (FastAPI). The full plan is in `docs/BUILD_PLAN.md`.
+This repo is Mamsha, a portfolio-grade project that also serves as a demo for Niyvaru: a real-time voice agent that walks a traveller from a Makkah hotel to the Haram through real 3D imagery (Google Photorealistic 3D Tiles via Cesium ion, rendered with CesiumJS) and real street-level photos (Mapillary, or Google Street View when a key exists). The web app is TypeScript (Vite + React). The API is Python (FastAPI). The full plan is in `docs/BUILD_PLAN.md`.
 
 ## How to work each session
 
@@ -39,6 +39,9 @@ If something in the plan is wrong or blocked (an API has changed, a model name i
 - Never fake street-level imagery. If no provider has imagery for a stop, use the Cesium street-height camera.
 - The Google Maps key is optional. The app must run fully without it.
 - The Cesium ion token is browser-side and restricted to the Google Photorealistic 3D Tiles asset. Never enable Cesium viewer defaults that call other ion assets or services (globe imagery, terrain, geocoder, base layer picker).
+- Realism (sight, sound and voice) is the main success criterion. Voice is core, not optional. When trading off, protect the walking camera, light, transitions, soundscape and voice quality.
+- Never put Niyvaru's name, business details or anything private from Abdiladiif in public-facing text (README, commit messages, code comments). Planning docs in `docs/` may mention it.
+- Only use audio with a CC0 or CC-BY style licence, credited in `apps/web/public/audio/CREDITS.md`.
 - The agent may only state place facts that exist in `data/route.json`. Never add facts without a `verified_from` value Williams has confirmed.
 
 ## Commands
