@@ -219,6 +219,7 @@ No build work on Wed 18. Abdiladiif replied (scope is the experience only, any r
 - [ ] **(Williams)** Check Google's 3D coverage of central Makkah in Google Earth (3D on). Realistic textured buildings mean the Cesium plan works. Flat grey blocks mean stop and replan before Thursday's 3D work
 - [ ] **(Williams)** Pick the route for the best imagery: Mapillary clusters were seen near Jabal Omar (west) and on the southern approach near Ibrahim Al Khalil Road. Then pick a hotel on it, 500 to 900 m from a gate
 - [ ] **(Williams)** Draft `data/route.json` details (hotel, gate, path, 4 or 5 stops, facts with `verified_from`) so the Day 1 route item can close
+- [ ] **(Williams)** Review the drafted route with `docs/route-review.md` (draft in `data/route.draft.json`: Emaar Andalusia to King Abdul Aziz Gate along Al Mesial Road), then rename it to `data/route.json`
 
 ### Thu 19 Nov: 3D city and the walking camera
 
