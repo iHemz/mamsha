@@ -55,3 +55,4 @@ No build work today. Abdiladiif confirmed: the experience only (no hotel APIs), 
 - Written to `data/route.json` (validates against `RouteData`, 5 stops, both profiles at every stop). Review checklist with photo links in `docs/route-review.md`.
 - Williams confirmed all 10 facts, and each `verified_from` now records that. The Day 1 `route.json` item and his review item are his to tick.
 
+- Day 1 closed: Williams completed the route review, and the Cesium ion, Mapillary, Gemini and Groq keys are in `.env`. No Google Maps key, so Street View stays off. Next: Thu 19 3D city and walking camera.

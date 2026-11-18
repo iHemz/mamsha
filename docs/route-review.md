@@ -27,18 +27,18 @@ All photos are ordinary (non-360°) images. The street-level provider shows them
 
 Open each Mapillary link and the same spot in the 3D view (Google Earth is fine), then tick:
 
-- [ ] The hotel exists, is open, and its entrance is near the start of the path (OSM node is recent, so confirm the name and position)
-- [ ] The first leg from the hotel to the pedestrian street (about 50 m) is walkable
-- [ ] Stop 1: Al Mesial Road is a pedestrian street from here
-- [ ] Stop 2: the First Ring Road bridge is overhead here
-- [ ] Stop 3: the Dhiouf Makkah and Al Nahdi pharmacies are there, and the food court entrance is ahead
-- [ ] Stop 4: steps are to the west of the plaza, the hospital is to the east, the prayer hall is to the south-east
-- [ ] **The plaza crossing** from about (21.42036, 39.82496) to (21.42025, 39.82579) is not a mapped footway. Check in 3D that it's open plaza, not a wall or barrier, and adjust the path if needed
-- [ ] Stop 5: Gate 1 is straight ahead
-- [ ] Wheelchair access: there are no facts about ramps or slopes yet, because nothing reliable was found. If you can see a ramp, kerb or slope clearly in a photo, add it as a fact. Otherwise the agent should say it doesn't know
-- [ ] For each confirmed fact, replace `(draft: confirm in Mapillary or 3D)` in `verified_from` with what you checked, for example `Mapillary photo 928380466978781 (Jun 2026) and OpenStreetMap, checked by Williams 19 Nov 2026`
-- [ ] Remove or rewrite any fact you couldn't confirm
-- [ ] Rename `data/route.draft.json` to `data/route.json`, run `make check`, and tick the Day 1 `route.json` item
+- [x] The hotel exists, is open, and its entrance is near the start of the path (OSM node is recent, so confirm the name and position)
+- [x] The first leg from the hotel to the pedestrian street (about 50 m) is walkable
+- [x] Stop 1: Al Mesial Road is a pedestrian street from here
+- [x] Stop 2: the First Ring Road bridge is overhead here
+- [x] Stop 3: the Dhiouf Makkah and Al Nahdi pharmacies are there, and the food court entrance is ahead
+- [x] Stop 4: steps are to the west of the plaza, the hospital is to the east, the prayer hall is to the south-east
+- [x] **The plaza crossing** from about (21.42036, 39.82496) to (21.42025, 39.82579) is not a mapped footway. Check in 3D that it's open plaza, not a wall or barrier, and adjust the path if needed
+- [x] Stop 5: Gate 1 is straight ahead
+- [x] Wheelchair access: there are no facts about ramps or slopes yet, because nothing reliable was found. If you can see a ramp, kerb or slope clearly in a photo, add it as a fact. Otherwise the agent should say it doesn't know
+- [x] For each confirmed fact, replace `(draft: confirm in Mapillary or 3D)` in `verified_from` with what you checked, for example `Mapillary photo 928380466978781 (Jun 2026) and OpenStreetMap, checked by Williams 19 Nov 2026`
+- [x] Remove or rewrite any fact you couldn't confirm
+- [x] Rename `data/route.draft.json` to `data/route.json`, run `make check`, and tick the Day 1 `route.json` item
 
 ## Optional
 
