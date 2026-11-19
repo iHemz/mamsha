@@ -26,6 +26,8 @@ describe("MapView", () => {
     expect(map.camera?.position.lng).toBe(sampleRoute.hotel.position.lng);
     expect(map.camera?.position.lat).toBeLessThan(sampleRoute.hotel.position.lat);
     expect(map.camera?.pitch).toBeLessThan(0);
+    expect(map.route).toEqual(sampleRoute.path);
+    expect(map.markers.map((m) => m.kind)).toEqual(["hotel", "stop", "stop", "gate"]);
 
     act(() => {
       map.setStatus({ state: "ready" });

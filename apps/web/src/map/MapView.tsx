@@ -2,6 +2,7 @@ import type { RouteData } from "@niyvaru/shared";
 import { useEffect, useRef, useState } from "react";
 
 import type { MapController, MapStatus } from "./MapController";
+import { drawRoute } from "./routeOverlay";
 
 /** Builds the real map on demand, so the heavy 3D code loads after the rest of the page. */
 export type CreateMap = () => Promise<MapController>;
@@ -27,6 +28,11 @@ export function MapView({ createMap, route, onReady }: MapViewProps) {
   useEffect(() => {
     onReadyRef.current = onReady;
   }, [onReady]);
+  // The latest route, read when the map is ready without re-creating the map.
+  const routeRef = useRef(route);
+  useEffect(() => {
+    routeRef.current = route;
+  }, [route]);
   const hotel = route.hotel.position;
 
   useEffect(() => {
@@ -56,6 +62,7 @@ export function MapView({ createMap, route, onReady }: MapViewProps) {
           heading: 0,
           pitch: -35,
         });
+        drawRoute(created, routeRef.current);
         onReadyRef.current?.(created);
       })
       .catch((error: unknown) => {
