@@ -1,4 +1,4 @@
-import type { RouteData } from "@niyvaru/shared";
+import type { RouteData } from "@mamsha/shared";
 import { useCallback, useEffect, useState } from "react";
 
 export type LoadRoute = (signal: AbortSignal) => Promise<RouteData>;

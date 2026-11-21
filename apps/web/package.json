@@ -11,7 +11,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@niyvaru/shared": "workspace:*",
+    "@mamsha/shared": "workspace:*",
     "ajv": "^8.20.0",
     "cesium": "^1.147.0",
     "react": "^19.3.1",

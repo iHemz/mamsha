@@ -1,4 +1,4 @@
-import type { RouteData } from "@niyvaru/shared";
+import type { RouteData } from "@mamsha/shared";
 
 import type { MapController, MapMarker } from "./MapController";
 
