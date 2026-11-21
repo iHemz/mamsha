@@ -254,6 +254,8 @@ No build work on Wed 18. Abdiladiif replied (scope is the experience only, any r
 
 ### Sat 21 Nov: agent backend
 
+**Compressed (21 Nov):** Thursday and Friday slipped. Williams chose to compress rather than move the target, so today also carries the unticked Thu 19 and Fri 20 items, oldest first, before the agent backend below. Wed 25 stays the target.
+
 - [ ] Agent core (API): system prompt builder injecting route facts and the grounding rule, tool declarations generated from `MapAction`, with tests
 - [ ] Fix the Ajv discriminator issue noted on Day 1 (Pydantic's `discriminator.mapping`), so the browser can validate `MapAction`
 - [ ] `POST /live/token`: ephemeral Gemini Live token with model, prompt, tools and voice locked in, short expiry, rate limited. Tested with the provider mocked

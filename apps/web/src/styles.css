@@ -158,14 +158,33 @@ button {
   padding-left: 1.5rem;
 }
 
-.map-placeholder {
+.map-view {
+  position: relative;
   flex: 1;
-  min-height: 16rem;
-  display: grid;
-  place-items: center;
-  border: 1px dashed var(--border);
+  min-height: 24rem;
   border-radius: var(--radius);
-  color: var(--muted);
+  overflow: hidden;
+  background: #0b1020;
+}
+
+.map-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.map-overlay {
+  position: absolute;
+  /* Top edge, so it never covers the credit bar (Google logo, Cesium credits). */
+  inset: 0.75rem 0.75rem auto;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  background: rgb(0 0 0 / 70%);
+  color: #fff;
+}
+
+.map-overlay.error {
+  color: #ffb4a8;
 }
 
 @media (prefers-reduced-motion: reduce) {
