@@ -1,6 +1,9 @@
 import type { RouteData } from "@mamsha/shared";
 
 import { distance, EYE_HEIGHT_M, headingDelta, offset } from "../map/cameraMath";
+
+/** The default height above the ground while walking between stops. */
+const WALK_ALT = 20;
 import { FakeMapController } from "../map/FakeMapController";
 import type { LatLng } from "../map/MapController";
 import { ManualClock } from "../test/manualClock";
@@ -65,7 +68,7 @@ describe("WalkingCamera", () => {
     expect(map.calls).toEqual([]);
   });
 
-  it("flies to an aerial overview, then down to eye height at the hotel door", async () => {
+  it("flies to an aerial overview, then down to the hotel door", async () => {
     const ctx = setup();
     ctx.walk.start();
     expect(ctx.walk.getProgress().phase).toBe("overview");
@@ -75,7 +78,7 @@ describe("WalkingCamera", () => {
     const [overview, door] = ctx.map.callsTo("flyTo");
     expect(overview?.pose.height).toBeGreaterThan(300 + 100);
     expect(overview?.pose.pitch).toBeLessThan(-20);
-    expect(door?.pose.height).toBeCloseTo(300 + EYE_HEIGHT_M, 1);
+    expect(door?.pose.height).toBeCloseTo(300 + WALK_ALT, 1);
     expect(door?.pose.position.lat).toBeCloseTo(ORIGIN.lat, 6);
     expect(Math.abs(headingDelta(door?.pose.heading ?? NaN, 0))).toBeLessThan(1);
     expect(ctx.walk.getProgress().phase).toBe("walking");
@@ -93,7 +96,7 @@ describe("WalkingCamera", () => {
     expect(distance(sampled.at(-1) ?? ORIGIN, END)).toBeLessThan(0.01);
   });
 
-  it("walks at pace and speed, at eye height above the sampled ground", async () => {
+  it("walks at pace and speed, just above the sampled ground", async () => {
     const ctx = setup();
     ctx.map.ground = (p) => 300 + (p.lat - ORIGIN.lat) * 1000;
     await startWalking(ctx);
@@ -104,7 +107,7 @@ describe("WalkingCamera", () => {
     expect(walked).toBeGreaterThan(18);
     expect(walked).toBeLessThan(22);
     const expectedGround = 300 + ((pose?.position.lat ?? 0) - ORIGIN.lat) * 1000;
-    expect(pose?.height).toBeCloseTo(expectedGround + EYE_HEIGHT_M, 1);
+    expect(pose?.height).toBeCloseTo(expectedGround + WALK_ALT, 1);
     expect(pose?.pitch).toBeLessThan(0);
 
     ctx.walk.setSpeed(2);
@@ -214,36 +217,45 @@ describe("WalkingCamera", () => {
     expect(ctx.walk.getProgress().phase).toBe("at_stop");
   });
 
-  it("cuts instead of flying and does not bob with reduced motion", async () => {
+  it("cuts instead of flying and changes height without easing with reduced motion", async () => {
     const ctx = setup({ reducedMotion: true });
     await startWalking(ctx);
     expect(ctx.map.callsTo("flyTo")).toEqual([]);
-    const heights = new Set<number>();
-    for (let i = 0; i < 20; i++) {
-      await ctx.clock.advance(50);
-      heights.add(Math.round((ctx.map.camera?.height ?? 0) * 1000));
-    }
-    expect([...heights]).toEqual([Math.round((300 + EYE_HEIGHT_M) * 1000)]);
+    expect(ctx.map.camera?.height).toBeCloseTo(300 + WALK_ALT, 6);
+    await ctx.clock.advance(4000);
+    expect(ctx.walk.getProgress().phase).toBe("at_stop");
+    expect(ctx.map.camera?.height).toBeCloseTo(300 + EYE_HEIGHT_M, 6);
   });
 
-  it("bobs slightly while walking otherwise", async () => {
+  it("eases down to eye height at a stop and back up when walking on", async () => {
+    const ctx = setup({ dwellSeconds: 4 });
+    await startWalking(ctx);
+    await ctx.clock.advance(4000);
+    expect(ctx.walk.getProgress().phase).toBe("at_stop");
+    const arriving = ctx.map.camera?.height ?? 0;
+    expect(arriving).toBeGreaterThan(300 + EYE_HEIGHT_M);
+    expect(arriving).toBeLessThan(300 + WALK_ALT);
+    await ctx.clock.advance(3500);
+    expect(ctx.map.camera?.height).toBeCloseTo(300 + EYE_HEIGHT_M, 0);
+    expect(ctx.map.camera?.pitch).toBeCloseTo(-3, 0);
+    await ctx.clock.advance(4000);
+    expect(ctx.walk.getProgress().phase).toBe("walking");
+    expect(ctx.map.camera?.height).toBeCloseTo(300 + WALK_ALT, 0);
+  });
+
+  it("lands at eye height when jumping to a stop", async () => {
     const ctx = setup();
     await startWalking(ctx);
-    const heights: number[] = [];
-    for (let i = 0; i < 20; i++) {
-      await ctx.clock.advance(50, 10);
-      heights.push(ctx.map.camera?.height ?? 0);
-    }
-    const spread = Math.max(...heights) - Math.min(...heights);
-    expect(spread).toBeGreaterThan(0);
-    expect(spread).toBeLessThanOrEqual(0.05);
+    ctx.walk.nextStop();
+    await ctx.clock.advance(100);
+    expect(ctx.map.callsTo("flyTo").at(-1)?.pose.height).toBeCloseTo(300 + EYE_HEIGHT_M, 6);
   });
 
   it("walks on the fallback ground when the tiles cannot be sampled", async () => {
     const ctx = setup({ fallbackGround: 250 });
     ctx.map.ground = undefined;
     await startWalking(ctx);
-    expect(ctx.map.camera?.height).toBeCloseTo(250 + EYE_HEIGHT_M, 1);
+    expect(ctx.map.camera?.height).toBeCloseTo(250 + WALK_ALT, 1);
   });
 
   it("gives up on samples that never arrive", async () => {
@@ -257,7 +269,7 @@ describe("WalkingCamera", () => {
       await vi.advanceTimersByTimeAsync(1000);
       await ctx.clock.advance(100);
       expect(ctx.walk.getProgress().phase).toBe("walking");
-      expect(ctx.map.camera?.height).toBeCloseTo(250 + EYE_HEIGHT_M, 1);
+      expect(ctx.map.camera?.height).toBeCloseTo(250 + WALK_ALT, 1);
     } finally {
       vi.useRealTimers();
     }
@@ -267,7 +279,7 @@ describe("WalkingCamera", () => {
     const ctx = setup();
     ctx.map.flyTo = () => Promise.reject(new Error("Camera flight cancelled"));
     await startWalking(ctx);
-    expect(ctx.map.camera?.height).toBeCloseTo(300 + EYE_HEIGHT_M, 1);
+    expect(ctx.map.camera?.height).toBeCloseTo(300 + WALK_ALT, 1);
   });
 
   it("notifies subscribers only when the visible progress changes", async () => {

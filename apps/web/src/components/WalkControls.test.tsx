@@ -58,7 +58,8 @@ describe("walk controls", () => {
     expect(screen.getByRole("status")).toHaveTextContent("Walk started");
     await advance(clock, 3500);
     expect(screen.getByText(/Stop 1 of 2 · \d+ m to go/)).toBeInTheDocument();
-    expect(map.camera?.height).toBeCloseTo(301.7, 0);
+    // Walking just above the crowd, 20 m over the ground.
+    expect(map.camera?.height).toBeCloseTo(320, 0);
 
     await user.click(screen.getByRole("button", { name: "Pause" }));
     expect(screen.getByText(/^Paused · Stop 1 of 2/)).toBeInTheDocument();

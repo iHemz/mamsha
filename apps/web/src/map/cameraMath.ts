@@ -201,14 +201,6 @@ export function smoothHeading(current: number, target: number, dt: number, tau =
   return lerpHeading(current, target, 1 - Math.exp(-dt / tau));
 }
 
-/**
- * Small vertical bob of a walker's eyes, from the distance walked (so it stops when the
- * walker stops). About two steps a second at walking pace.
- */
-export function stepBob(walked: number, amplitude = 0.02, stride = 0.7): number {
-  return amplitude * Math.sin((2 * Math.PI * walked) / stride);
-}
-
 /** Ground heights at known distances along a path. */
 export interface GroundProfile {
   distances: readonly number[];

@@ -4,7 +4,6 @@ import {
   groundAt,
   sampleDistances,
   smoothHeading,
-  stepBob,
   bearing,
   distance,
   distanceAlong,
@@ -190,13 +189,6 @@ describe("smoothHeading", () => {
 
   it("snaps when there is no smoothing", () => {
     expect(smoothHeading(0, 450, 0.016, 0)).toBe(90);
-  });
-});
-
-describe("stepBob", () => {
-  it("stays within its amplitude and is level at rest", () => {
-    expect(stepBob(0)).toBe(0);
-    for (let d = 0; d < 5; d += 0.05) expect(Math.abs(stepBob(d, 0.02))).toBeLessThanOrEqual(0.02);
   });
 });
 

@@ -1,6 +1,7 @@
 /**
- * The walking camera: an aerial overview, a descent to eye height at the hotel door,
- * then a walk along the whole route path at walking pace, pausing at each stop.
+ * The walking camera: an aerial overview, a descent to the hotel door, then a walk
+ * along the whole route path at walking pace, just above the crowd, easing down to
+ * eye height at each stop.
  *
  * It only decides where the camera goes and hands each pose to `MapController`, so it
  * runs the same against Cesium and against `FakeMapController`. Time comes from a
@@ -21,7 +22,6 @@ import {
   pointAt,
   sampleDistances,
   smoothHeading,
-  stepBob,
 } from "../map/cameraMath";
 import type { CameraPose, MapController } from "../map/MapController";
 
@@ -62,7 +62,7 @@ export const browserFrameClock: FrameClock = {
 
 export interface WalkingCameraOptions {
   clock?: FrameClock | undefined;
-  /** No step bob, and camera flights become cuts. */
+  /** Camera flights and height changes become cuts. */
   reducedMotion?: boolean | undefined;
   /** Metres per second at speed 1. */
   pace?: number | undefined;
@@ -74,6 +74,12 @@ export interface WalkingCameraOptions {
   sampleTimeoutMs?: number | undefined;
   /** Ground height used until (or if never) the tiles are sampled. */
   fallbackGround?: number | undefined;
+  /**
+   * Metres above the ground while walking between stops. Google's 3D tiles are made
+   * from aerial photos and smear at true eye height, so the walk moves just above the
+   * crowd and only drops to eye height at the stops.
+   */
+  walkAltitude?: number | undefined;
   /** Called once when the walker reaches each stop. */
   onArrive?: ((stopId: string) => void) | undefined;
 }
@@ -82,8 +88,13 @@ export interface WalkingCameraOptions {
 const DEFAULT_GROUND_M = 280;
 /** Ground samples per request, so a slow area doesn't hold up the rest. */
 const SAMPLE_CHUNK = 12;
-const WALK_PITCH = -5;
+const DEFAULT_WALK_ALTITUDE_M = 20;
+/** Looking ahead along the path and a little down onto it. */
+const WALK_PITCH = -15;
+/** Standing at a stop: eyes level, slightly down. */
 const STOP_PITCH = -3;
+/** Seconds for the height and pitch change on arriving at or leaving a stop. */
+const DESCENT_TAU_S = 0.8;
 /** Longest frame step, so a background tab doesn't teleport the walker on return. */
 const MAX_FRAME_S = 0.1;
 
@@ -119,6 +130,10 @@ export class WalkingCamera {
   private stopIndex = 0;
   private dwellLeft = 0;
   private heading = 0;
+  private readonly walkAltitude: number;
+  /** Current height above the ground and pitch, eased between walking and stops. */
+  private altitude: number;
+  private pitch = WALK_PITCH;
   private speed: WalkSpeed = 1;
   private profile: GroundProfile | null = null;
   private profileReady: Promise<GroundProfile> | null = null;
@@ -151,6 +166,8 @@ export class WalkingCamera {
     this.sampleTimeoutMs = options.sampleTimeoutMs ?? 15_000;
     this.fallbackGround = options.fallbackGround ?? DEFAULT_GROUND_M;
     this.onArrive = options.onArrive;
+    this.walkAltitude = options.walkAltitude ?? DEFAULT_WALK_ALTITUDE_M;
+    this.altitude = this.walkAltitude;
     this.heading = headingAt(this.path, 0);
     this.snapshot = this.computeProgress();
   }
@@ -172,6 +189,8 @@ export class WalkingCamera {
     this.walked = 0;
     this.stopIndex = 0;
     this.heading = headingAt(this.path, 0);
+    this.altitude = this.walkAltitude;
+    this.pitch = WALK_PITCH;
     this.map.setCameraInput(false);
     this.setPhase("overview");
     void this.guard(run, async () => {
@@ -229,7 +248,11 @@ export class WalkingCamera {
       const stop = this.stops[target];
       this.walked = stop ? stop.along : this.path.length;
       this.stopIndex = target;
-      if (stop) this.heading = stop.heading;
+      if (stop) {
+        this.heading = stop.heading;
+        this.altitude = EYE_HEIGHT_M;
+        this.pitch = STOP_PITCH;
+      }
       await this.moveTo(run, this.walkerPose(), 2.5);
       if (stop) this.arrive();
       else this.finish();
@@ -407,17 +430,27 @@ export class WalkingCamera {
       if (this.dwellLeft <= 0) this.leaveStop();
     }
 
+    this.easeHeight(dt);
     this.map.setCamera(this.walkerPose());
     this.emit();
   }
 
+  /** Ease down to eye height at a stop and back up when walking on. */
+  private easeHeight(dt: number): void {
+    const atStop = this.phase === "at_stop";
+    const altitude = atStop ? EYE_HEIGHT_M : this.walkAltitude;
+    const pitch = atStop ? STOP_PITCH : WALK_PITCH;
+    const t = this.reducedMotion ? 1 : 1 - Math.exp(-dt / DESCENT_TAU_S);
+    this.altitude += (altitude - this.altitude) * t;
+    this.pitch += (pitch - this.pitch) * t;
+  }
+
   private walkerPose(): CameraPose {
-    const bob = this.phase === "walking" && !this.reducedMotion ? stepBob(this.walked) : 0;
     return {
       position: pointAt(this.path, this.walked),
-      height: this.groundHere() + EYE_HEIGHT_M + bob,
+      height: this.groundHere() + this.altitude,
       heading: this.heading,
-      pitch: this.phase === "at_stop" ? STOP_PITCH : WALK_PITCH,
+      pitch: this.pitch,
     };
   }
 
