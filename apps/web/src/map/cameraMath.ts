@@ -191,3 +191,96 @@ export function walkerPose(path: MeasuredPath, d: number, ground: number, pitch 
     pitch,
   };
 }
+
+/**
+ * Ease `current` toward `target` over time: after `tau` seconds about 63% of the turn
+ * is done. Frame-rate independent, so the turn feels the same at 30 or 144 fps.
+ */
+export function smoothHeading(current: number, target: number, dt: number, tau = 0.5): number {
+  if (tau <= 0) return normaliseHeading(target);
+  return lerpHeading(current, target, 1 - Math.exp(-dt / tau));
+}
+
+/**
+ * Small vertical bob of a walker's eyes, from the distance walked (so it stops when the
+ * walker stops). About two steps a second at walking pace.
+ */
+export function stepBob(walked: number, amplitude = 0.02, stride = 0.7): number {
+  return amplitude * Math.sin((2 * Math.PI * walked) / stride);
+}
+
+/** Ground heights at known distances along a path. */
+export interface GroundProfile {
+  distances: readonly number[];
+  heights: readonly number[];
+}
+
+/** Evenly spaced distances from 0 to `length`, at most `step` metres apart. */
+export function sampleDistances(length: number, step = 10): number[] {
+  const n = Math.max(1, Math.ceil(length / step));
+  return Array.from({ length: n + 1 }, (_, i) => (i === n ? length : (i * length) / n));
+}
+
+function median(values: number[]): number {
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = sorted.length >> 1;
+  return sorted.length % 2 ? at(sorted, mid) : (at(sorted, mid - 1) + at(sorted, mid)) / 2;
+}
+
+/**
+ * Turn raw ground samples into a profile the camera can follow.
+ *
+ * Samples hit the top of whatever is there, so a car, a lamp post or a canopy shows up
+ * as a spike. Missing samples (tiles that never loaded) are filled from their
+ * neighbours, then a running median over `radius` samples each side removes spikes
+ * while keeping real slopes. If nothing was sampled, `fallback` is used everywhere.
+ */
+export function buildGroundProfile(
+  distances: readonly number[],
+  samples: readonly (number | undefined)[],
+  fallback: number,
+  radius = 2,
+): GroundProfile {
+  if (distances.length !== samples.length) {
+    throw new Error("Each distance needs exactly one sample");
+  }
+  const known: { i: number; h: number }[] = [];
+  samples.forEach((h, i) => {
+    if (h !== undefined && Number.isFinite(h)) known.push({ i, h });
+  });
+  const filled = samples.map((_, i) => {
+    const before = known.filter((k) => k.i <= i).at(-1);
+    const after = known.find((k) => k.i >= i);
+    if (!before && !after) return fallback;
+    if (!before || !after) return (before ?? after)?.h ?? fallback;
+    if (before.i === after.i) return before.h;
+    const t =
+      (at(distances, i) - at(distances, before.i)) /
+      (at(distances, after.i) - at(distances, before.i));
+    return before.h + (after.h - before.h) * t;
+  });
+  // Symmetric window, narrowed at the ends so the first and last samples stay put.
+  const heights = filled.map((_, i) => {
+    const r = Math.min(radius, i, filled.length - 1 - i);
+    return median(filled.slice(i - r, i + r + 1));
+  });
+  return { distances: [...distances], heights };
+}
+
+/** Ground height at distance `d`, interpolated from the profile and clamped to its ends. */
+export function groundAt(profile: GroundProfile, d: number): number {
+  const { distances, heights } = profile;
+  if (heights.length === 0) throw new Error("Empty ground profile");
+  if (d <= at(distances, 0)) return at(heights, 0);
+  const last = distances.length - 1;
+  if (d >= at(distances, last)) return at(heights, last);
+  let lo = 0;
+  let hi = last;
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    if (at(distances, mid) <= d) lo = mid;
+    else hi = mid;
+  }
+  const t = (d - at(distances, lo)) / (at(distances, hi) - at(distances, lo));
+  return at(heights, lo) + (at(heights, hi) - at(heights, lo)) * t;
+}
