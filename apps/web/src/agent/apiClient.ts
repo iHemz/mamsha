@@ -1,5 +1,5 @@
-import type { RouteData } from "@niyvaru/shared";
-import routeDataSchema from "@niyvaru/shared/schemas/route_data.json";
+import type { RouteData } from "@mamsha/shared";
+import routeDataSchema from "@mamsha/shared/schemas/route_data.json";
 import { Ajv2020 } from "ajv/dist/2020";
 
 const ajv = new Ajv2020({ allErrors: true });

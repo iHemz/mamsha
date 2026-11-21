@@ -1,4 +1,4 @@
-import type { RouteData } from "@niyvaru/shared";
+import type { RouteData } from "@mamsha/shared";
 
 /** Fixture data for tests only. Not real places or facts. */
 export const sampleRoute: RouteData = {
