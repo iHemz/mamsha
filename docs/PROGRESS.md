@@ -56,3 +56,15 @@ No build work today. Abdiladiif confirmed: the experience only (no hotel APIs), 
 - Williams confirmed all 10 facts, and each `verified_from` now records that. The Day 1 `route.json` item and his review item are his to tick.
 
 - Day 1 closed: Williams completed the route review, and the Cesium ion, Mapillary, Gemini and Groq keys are in `.env`. No Google Maps key, so Street View stays off. Next: Thu 19 3D city and walking camera.
+
+## Sat 21 Nov 2026: 3D city, route and camera math
+
+Thu 19 work, done today.
+
+- Done: web env for Cesium, Mapillary and the street-level provider; `MapController` with a fake; CesiumJS in Vite, loaded on demand (main bundle 361 kB, Cesium chunk 4.2 MB); `CesiumMapController` showing Google Photorealistic 3D Tiles through ion; route line and markers draped on the tiles; camera math module (27 tests). Page and API titles renamed to Mamsha.
+- Checked in Chrome: no 401s from ion, every ion and tile request 200, Google and Cesium credits visible. First detailed tiles take about 15 s.
+- Deviation: a missing ion token shows an error on the map instead of failing at startup, so chat and the scripted walk keep working.
+- Optional terrain fallback not built: the token has no extra assets, so the error state covers it.
+- Left from Thu 19: the walking camera and manual controls. Items stay unticked until the day's "Done when" (walking at eye height) is met.
+- Schedule: Thu 19 and Fri 20 slipped. Compressed into today, target still Wed 25.
+- Blocker: OneDrive syncing `node_modules` and `dist` slowed a web test run from about 1 to over 6 minutes. Williams paused syncing. Move the repo out of OneDrive if it persists.
