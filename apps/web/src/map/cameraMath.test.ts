@@ -1,5 +1,9 @@
 import {
   at,
+  buildGroundProfile,
+  groundAt,
+  sampleDistances,
+  smoothHeading,
   bearing,
   distance,
   distanceAlong,
@@ -167,5 +171,63 @@ describe("camera poses", () => {
     expect(headingDelta(bearing(pose.position, middle), overall)).toBeCloseTo(0, 1);
     expect(pose.height).toBeGreaterThan(300 + 100);
     expect(pose.pitch).toBe(-35);
+  });
+});
+
+describe("smoothHeading", () => {
+  it("turns part of the way each frame, the short way round", () => {
+    const next = smoothHeading(350, 10, 0.1, 0.5);
+    expect(headingDelta(350, next)).toBeGreaterThan(0);
+    expect(headingDelta(350, next)).toBeLessThan(20);
+  });
+
+  it("is frame-rate independent", () => {
+    let fast = 0;
+    for (let i = 0; i < 10; i++) fast = smoothHeading(fast, 90, 0.01);
+    expect(fast).toBeCloseTo(smoothHeading(0, 90, 0.1), 6);
+  });
+
+  it("snaps when there is no smoothing", () => {
+    expect(smoothHeading(0, 450, 0.016, 0)).toBe(90);
+  });
+});
+
+describe("ground profile", () => {
+  it("spaces samples evenly and includes both ends", () => {
+    expect(sampleDistances(25, 10)).toEqual([0, 25 / 3, 50 / 3, 25]);
+    expect(sampleDistances(0, 10)).toEqual([0, 0]);
+  });
+
+  it("fills missing samples from their neighbours", () => {
+    const profile = buildGroundProfile([0, 10, 20, 30], [undefined, 300, undefined, 304], 0, 0);
+    expect(profile.heights).toEqual([300, 300, 302, 304]);
+  });
+
+  it("uses the fallback when nothing could be sampled", () => {
+    const profile = buildGroundProfile([0, 10], [undefined, Number.NaN], 280);
+    expect(profile.heights).toEqual([280, 280]);
+  });
+
+  it("removes a spike such as a car or canopy but keeps a slope", () => {
+    const distances = [0, 10, 20, 30, 40, 50, 60];
+    const slope = [300, 301, 302, 303, 304, 305, 306];
+    const spiked = [...slope];
+    spiked[3] = 309;
+    // The 6 m spike is gone; what is left is within a metre of the true ground.
+    expect(buildGroundProfile(distances, spiked, 0).heights[3]).toBe(304);
+    expect(buildGroundProfile(distances, slope, 0).heights).toEqual(slope);
+  });
+
+  it("rejects mismatched inputs", () => {
+    expect(() => buildGroundProfile([0, 10], [1], 0)).toThrow();
+  });
+
+  it("interpolates between samples and clamps at the ends", () => {
+    const profile = { distances: [0, 10, 20], heights: [300, 302, 301] };
+    expect(groundAt(profile, -5)).toBe(300);
+    expect(groundAt(profile, 5)).toBe(301);
+    expect(groundAt(profile, 15)).toBe(301.5);
+    expect(groundAt(profile, 99)).toBe(301);
+    expect(() => groundAt({ distances: [], heights: [] }, 0)).toThrow();
   });
 });

@@ -54,10 +54,14 @@ export interface MapController {
   flyTo(pose: CameraPose, durationSeconds: number): Promise<void>;
 
   /**
-   * Height of the ground (top of the 3D tiles) at `position`, in metres above the
-   * ellipsoid. `undefined` when the tiles there are not loaded or cannot be sampled.
+   * Height of the ground (top of the 3D tiles) at each position, in metres above the
+   * ellipsoid, in the same order. An entry is `undefined` where the tiles are not
+   * loaded or cannot be sampled. May take a while, since it loads the detailed tiles.
    */
-  groundHeight(position: LatLng): Promise<number | undefined>;
+  groundHeights(positions: readonly LatLng[]): Promise<(number | undefined)[]>;
+
+  /** Let the user drag and zoom the camera, or not (the walking camera owns it). */
+  setCameraInput(enabled: boolean): void;
 
   /** Current status, then every change. Returns an unsubscribe function. */
   onStatus(listener: (status: MapStatus) => void): () => void;

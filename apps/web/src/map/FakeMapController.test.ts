@@ -25,9 +25,17 @@ describe("FakeMapController", () => {
   it("returns the chosen ground height, including unloaded tiles", async () => {
     const map = new FakeMapController();
     map.ground = 280;
-    await expect(map.groundHeight(pose.position)).resolves.toBe(280);
+    await expect(map.groundHeights([pose.position])).resolves.toEqual([280]);
     map.ground = undefined;
-    await expect(map.groundHeight(pose.position)).resolves.toBeUndefined();
+    await expect(map.groundHeights([pose.position])).resolves.toEqual([undefined]);
+    map.ground = (p) => p.lat * 10;
+    await expect(map.groundHeights([{ lat: 2, lng: 0 }])).resolves.toEqual([20]);
+  });
+
+  it("records whether the user may move the camera", () => {
+    const map = new FakeMapController();
+    map.setCameraInput(false);
+    expect(map.cameraInput).toBe(false);
   });
 
   it("sends the current status, then changes, until unsubscribed", () => {

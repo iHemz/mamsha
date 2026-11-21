@@ -68,3 +68,15 @@ Thu 19 work, done today.
 - Left from Thu 19: the walking camera and manual controls. Items stay unticked until the day's "Done when" (walking at eye height) is met.
 - Schedule: Thu 19 and Fri 20 slipped. Compressed into today, target still Wed 25.
 - Blocker: OneDrive syncing `node_modules` and `dist` slowed a web test run from about 1 to over 6 minutes. Williams paused syncing. Move the repo out of OneDrive if it persists.
+
+## Sat 21 Nov 2026: walking camera and manual controls
+
+Thu 19 items 8 and 9, done today. Thu 19 is now closed.
+
+- Done: ground profile along the route (sampled every 10 m in batches, gaps filled, spikes removed with a running median), heading smoothing, and the `WalkingCamera` controller in `apps/web/src/walk/`: aerial overview, descent to the hotel door, walk at pace with speed control, pause at each stop facing its heading, pause and resume, next stop, reduced motion (cuts instead of flights). `WalkProgress` ("Stop 2 of 5 · 280 m to go", with a quiet screen-reader region that only announces phase and stop changes) and the manual controls (start, pause and resume, next stop, speed). 107 web tests.
+- `MapController` gained `groundHeights` (batch) and `setCameraInput` (the walk locks the camera; pausing hands it back).
+- Checked in Chrome on the real route: ground sampling returns 287 m at the hotel in about 240 ms, the camera sits exactly at the intended height, stops and next stop work, no console errors.
+- Decision (Williams): at 1.7 m Google's 3D tiles smear into blurry shapes, while about 20 m up the same spot looks real. The walk now moves about 20 m above the path and eases down to eye height at each stop, where Friday's street-level photos take over. The Realism layer section and Thursday's "Done when" are updated. The step bob was dropped.
+- Next: Fri 20 items, starting with `StreetLevelProvider` and `MapillaryProvider`.
+- Environment: at session start Explorer and OneDrive sync held the CPU at 100%, so module loads took over a minute, Vitest workers timed out and the browser MCP servers failed to start. Vitest still sometimes times out while the dev server and Chrome are running; `--maxWorkers=1` gets through.
+

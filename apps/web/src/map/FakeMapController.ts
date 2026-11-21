@@ -8,7 +8,9 @@ export type FakeMapCall =
   | { method: "setMarkers"; markers: MapMarker[] }
   | { method: "highlight"; markerId: string | null }
   | { method: "setCamera"; pose: CameraPose }
-  | { method: "flyTo"; pose: CameraPose; durationSeconds: number };
+  | { method: "flyTo"; pose: CameraPose; durationSeconds: number }
+  | { method: "groundHeights"; positions: LatLng[] }
+  | { method: "setCameraInput"; enabled: boolean };
 
 /**
  * In-memory MapController for tests. Records every call, keeps the visible state,
@@ -22,8 +24,12 @@ export class FakeMapController implements MapController {
   camera: CameraPose | null = null;
   mounted = false;
 
-  /** Ground height returned by `groundHeight`. Set to `undefined` to simulate unloaded tiles. */
-  ground: number | undefined = 0;
+  /**
+   * Ground height returned by `groundHeights`: a constant, a function of position, or
+   * `undefined` to simulate unloaded tiles.
+   */
+  ground: number | undefined | ((position: LatLng) => number | undefined) = 0;
+  cameraInput = true;
 
   private status: MapStatus = { state: "loading" };
   private readonly listeners = new Set<(status: MapStatus) => void>();
@@ -71,8 +77,17 @@ export class FakeMapController implements MapController {
     return Promise.resolve();
   }
 
-  groundHeight(_position: LatLng): Promise<number | undefined> {
-    return Promise.resolve(this.ground);
+  groundHeights(positions: readonly LatLng[]): Promise<(number | undefined)[]> {
+    this.calls.push({ method: "groundHeights", positions: [...positions] });
+    const ground = this.ground;
+    return Promise.resolve(
+      positions.map((p) => (typeof ground === "function" ? ground(p) : ground)),
+    );
+  }
+
+  setCameraInput(enabled: boolean): void {
+    this.calls.push({ method: "setCameraInput", enabled });
+    this.cameraInput = enabled;
   }
 
   onStatus(listener: (status: MapStatus) => void): () => void {

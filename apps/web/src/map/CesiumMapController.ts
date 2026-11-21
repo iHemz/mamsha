@@ -192,13 +192,22 @@ export class CesiumMapController implements MapController {
     });
   }
 
-  async groundHeight(position: LatLng): Promise<number | undefined> {
+  async groundHeights(positions: readonly LatLng[]): Promise<(number | undefined)[]> {
     const viewer = this.viewer;
-    if (!viewer || viewer.isDestroyed() || !viewer.scene.sampleHeightSupported) return undefined;
-    const [sample] = await viewer.scene.sampleHeightMostDetailed([
-      Cartographic.fromDegrees(position.lng, position.lat),
-    ]);
-    return sample?.height;
+    if (!viewer || viewer.isDestroyed() || !viewer.scene.sampleHeightSupported) {
+      return positions.map(() => undefined);
+    }
+    const samples = await viewer.scene.sampleHeightMostDetailed(
+      positions.map((p) => Cartographic.fromDegrees(p.lng, p.lat)),
+    );
+    // Cesium leaves `height` undefined where nothing was hit, despite its type.
+    return samples.map((s) => (s && Number.isFinite(s.height) ? s.height : undefined));
+  }
+
+  setCameraInput(enabled: boolean): void {
+    const viewer = this.viewer;
+    if (!viewer || viewer.isDestroyed()) return;
+    viewer.scene.screenSpaceCameraController.enableInputs = enabled;
   }
 
   onStatus(listener: (status: MapStatus) => void): () => void {
