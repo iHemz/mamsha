@@ -89,7 +89,7 @@ The demo must work with no paid Google Maps account. See ADR 0005.
 
 Everything here sits on top of `MapController` and is tested with fakes where it has logic.
 
-- **Walking camera:** the walk follows the whole route path, not stop-to-stop jumps. Eye height about 1.7 m above the sampled 3D tile height, walking pace (about 1.3 m/s, with a speed control for demos), heading eased smoothly through corners, small pitch toward the ground ahead. Optional subtle step bob, off when reduced motion is on.
+- **Walking camera:** the walk follows the whole route path, not stop-to-stop jumps, at walking pace (about 1.3 m/s, with a speed control for demos), heading eased smoothly through corners. Between stops it moves about 20 m above the sampled 3D tile height, looking ahead and down; at each stop it eases down to eye height (1.7 m). Changed on 21 Nov after testing: Google's 3D tiles are built from aerial photos and smear at eye height, so true street level comes from the street-level photos at the stops.
 - **Light:** Cesium clock set to a chosen local Makkah time (default late afternoon) with sun lighting and shadows on, plus atmosphere and slight distance fog so the city doesn't look like a model.
 - **Transitions:** crossfade between the 3D view and street-level photos (Mapillary or Street View) instead of hard cuts, aligned to the walking heading.
 - **Soundscape:** licensed ambient recordings (CC0 or CC-BY, with every source listed in `apps/web/public/audio/CREDITS.md`): street and crowd sound along the route, rising Haram ambience near the gate, and an adhan clip only if a properly licensed recording is found. Volume follows distance along the route. Ambience ducks automatically under the agent's voice. Mute button and a "sound on" prompt, since browsers block autoplay.
@@ -223,17 +223,17 @@ No build work on Wed 18. Abdiladiif replied (scope is the experience only, any r
 
 ### Thu 19 Nov: 3D city and the walking camera
 
-- [ ] Web env: add `VITE_CESIUM_ION_TOKEN` (required), `VITE_MAPILLARY_ACCESS_TOKEN` (optional), `VITE_STREET_LEVEL_PROVIDER` (default `auto`) to `config/env.ts` with tests. The Google key stays optional
-- [ ] `MapController` interface plus `FakeMapController` for tests
-- [ ] CesiumJS set up in Vite (static assets via `vite-plugin-static-copy` or `vite-plugin-cesium`, `CESIUM_BASE_URL`), lazy-loaded so the chat panel renders first
-- [ ] `CesiumMapController`: viewer that loads only Google Photorealistic 3D Tiles from Cesium ion, centred on the hotel. Google logo and Cesium credits visible. The token is restricted to that one asset, so turn off every Cesium default that requests other ion assets or services: create the `Viewer` with `globe: false`, `baseLayer: false`, `baseLayerPicker: false`, `geocoder: false`, `terrain` unset, and also `timeline: false`, `animation: false`, `homeButton: false`, `sceneModePicker: false`, `navigationHelpButton: false`. Show the sky but no ellipsoid. Done when the network tab shows no 401s from ion
-- [ ] Optional fallback (only if Williams adds Cesium World Terrain and Cesium OSM Buildings to the token): if the Google tiles fail to load, enable the globe with World Terrain plus OSM Buildings and show a small notice. Otherwise show a clear error state with the scripted walk still usable
-- [ ] Route as a polyline clamped to the 3D tiles, markers for the hotel, stops and the gate
-- [ ] Camera math module: bearing, distance, path interpolation by distance, eased heading through corners, eye-height sampling. Unit tests
-- [ ] Walking camera (see Realism layer): follows the full path at walking pace from eye height, pauses at stops, speed control, `WalkProgress` ("Stop 2 of 5 · 280 m to go"). An aerial "overview" shot at the start, then it lowers to eye height at the hotel door
-- [ ] Manual controls (start, pause, next stop, speed) so the walk works without the agent
+- [x] Web env: add `VITE_CESIUM_ION_TOKEN` (required), `VITE_MAPILLARY_ACCESS_TOKEN` (optional), `VITE_STREET_LEVEL_PROVIDER` (default `auto`) to `config/env.ts` with tests. The Google key stays optional
+- [x] `MapController` interface plus `FakeMapController` for tests
+- [x] CesiumJS set up in Vite (static assets via `vite-plugin-static-copy` or `vite-plugin-cesium`, `CESIUM_BASE_URL`), lazy-loaded so the chat panel renders first
+- [x] `CesiumMapController`: viewer that loads only Google Photorealistic 3D Tiles from Cesium ion, centred on the hotel. Google logo and Cesium credits visible. The token is restricted to that one asset, so turn off every Cesium default that requests other ion assets or services: create the `Viewer` with `globe: false`, `baseLayer: false`, `baseLayerPicker: false`, `geocoder: false`, `terrain` unset, and also `timeline: false`, `animation: false`, `homeButton: false`, `sceneModePicker: false`, `navigationHelpButton: false`. Show the sky but no ellipsoid. Done when the network tab shows no 401s from ion
+- [x] Optional fallback (only if Williams adds Cesium World Terrain and Cesium OSM Buildings to the token): if the Google tiles fail to load, enable the globe with World Terrain plus OSM Buildings and show a small notice. Otherwise show a clear error state with the scripted walk still usable
+- [x] Route as a polyline clamped to the 3D tiles, markers for the hotel, stops and the gate
+- [x] Camera math module: bearing, distance, path interpolation by distance, eased heading through corners, eye-height sampling. Unit tests
+- [x] Walking camera (see Realism layer): follows the full path at walking pace from eye height, pauses at stops, speed control, `WalkProgress` ("Stop 2 of 5 · 280 m to go"). An aerial "overview" shot at the start, then it lowers to eye height at the hotel door
+- [x] Manual controls (start, pause, next stop, speed) so the walk works without the agent
 
-**Done when:** pressing Start walks the route at eye height in real 3D, smoothly, and the camera math tests pass.
+**Done when:** pressing Start walks the route at eye height in real 3D, smoothly, and the camera math tests pass. (Amended 21 Nov: walking height is about 20 m with eye height at the stops, see Realism layer.)
 
 ### Fri 20 Nov: street level, light and sound
 
